@@ -46,24 +46,24 @@ const pages: MenuItem[] = [
             },
         ]
     },
-    {
-        title: "Launchpad",
-        id: "launchpad",
-        link: "launchpad",
-        other: ["launchpad", "locker"],
-        childrens: [
-            {
-                title: "Launchpad",
-                id: "launchpad",
-                link: "launchpad",
-            },
-            {
-                title: "Token Lock",
-                id: "lock",
-                link: "locker",
-            },
-        ]
-    },
+    // {
+    //     title: "Launchpad",
+    //     id: "launchpad",
+    //     link: "launchpad",
+    //     other: ["launchpad", "locker"],
+    //     childrens: [
+    //         {
+    //             title: "Launchpad",
+    //             id: "launchpad",
+    //             link: "launchpad",
+    //         },
+    //         {
+    //             title: "Token Lock",
+    //             id: "lock",
+    //             link: "locker",
+    //         },
+    //     ]
+    // },
     {
         title: "Earn",
         id: "earn",
@@ -77,12 +77,12 @@ const pages: MenuItem[] = [
             },
         ]
     },
-    {
-        title: "Bridge",
-        id: "bridge",
-        link: "https://scroll.io/bridge/",
-        other: []
-    },
+    // {
+    //     title: "Bridge",
+    //     id: "bridge",
+    //     link: "https://scroll.io/bridge/",
+    //     other: []
+    // },
 ];
 
 function Header() {

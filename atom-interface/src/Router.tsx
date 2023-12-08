@@ -14,14 +14,13 @@ export default function Router() {
     }, [currentChain.chain])
 
     useEffect(() => {
-        GlobalStore.loadBaseTokens()
     }, [])
 
     return (
         <Routes>
             <Route path='/' element={<Layout />}>
                 <Route index element={<Navigate to={"/swap"} />} />
-                <Route path='swap' element={<Swap />} />
+                <Route path='*' element={<Swap />} />
             </Route>
         </Routes>
     )

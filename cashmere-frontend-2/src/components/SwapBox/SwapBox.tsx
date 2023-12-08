@@ -28,10 +28,10 @@ import { Api } from '../../utils/api';
 import { MdInfoOutline } from 'react-icons/all';
 
 const SwapBox = observer(({
-                              state,
-                              swapSettings,
-                              setState,
-                          }: {
+    state,
+    swapSettings,
+    setState,
+}: {
     state: SwapState;
     setState: (to: SwapState) => void;
     swapSettings: SwapSettingType;
@@ -46,7 +46,7 @@ const SwapBox = observer(({
     const [fee, setFee] = useState('');
     const [priceImpact, setPriceImpact] = useState('');
     const [estimateError, setEstimateError] = useState<string>();
-    const [ estimateLoading, setEstimateLoading ] = useState(false);
+    const [estimateLoading, setEstimateLoading] = useState(false);
 
     const swapSettingsModal = useModal();
     const swapConfirmationModal = useModal();
@@ -196,7 +196,7 @@ const SwapBox = observer(({
                     }}
                 />
             )}
-            <SwapSettings modal={swapSettingsModal} swapSettings={swapSettings}/>
+            <SwapSettings modal={swapSettingsModal} swapSettings={swapSettings} />
             <SwapConfirmation
                 data={{
                     fee: '24.169.287 USDT',
@@ -261,7 +261,7 @@ const SwapBox = observer(({
                     size={16}
                     hoverable
                 >
-                    <SettingsIcon/>
+                    <SettingsIcon />
                 </Icon>
             </div>
             {/* FROM */}
@@ -302,7 +302,7 @@ const SwapBox = observer(({
                     extendRight
                     isFullWidth
                     menuRenderer={() => (
-                        <TokenOrNetworkRenderer tokenOrNetwork={state.fromChain}/>
+                        <TokenOrNetworkRenderer tokenOrNetwork={state.fromChain} />
                     )}
                     value={state.fromChain}
                     setValue={() => undefined}
@@ -316,7 +316,7 @@ const SwapBox = observer(({
                     extendLeft
                     isFullWidth
                     menuRenderer={() => (
-                        <TokenOrNetworkRenderer tokenOrNetwork={state.fromToken}/>
+                        <TokenOrNetworkRenderer tokenOrNetwork={state.fromToken} />
                     )}
                     value={state.fromToken}
                     setValue={() => undefined}
@@ -344,7 +344,7 @@ const SwapBox = observer(({
                     }}
                     rightEl={
                         <Button width="18px" color="white"
-                                onClick={() => setState({ ...state, fromAmount: fromBalance?.toString() || '' })}>
+                            onClick={() => setState({ ...state, fromAmount: fromBalance?.toString() || '' })}>
                             Max
                         </Button>
                     }
@@ -360,7 +360,7 @@ const SwapBox = observer(({
                     style={{ color: 'var(--icon-dark)' }}
                     hoverable
                 >
-                    <RotateIcon/>
+                    <RotateIcon />
                 </Icon>
             </Row>
             {/* ROTATE CIRCLE ENDS */}
@@ -380,7 +380,7 @@ const SwapBox = observer(({
                     extendRight
                     isFullWidth
                     menuRenderer={() => (
-                        <TokenOrNetworkRenderer tokenOrNetwork={state.toChain}/>
+                        <TokenOrNetworkRenderer tokenOrNetwork={state.toChain} />
                     )}
                     value={state.toChain}
                     options={activeChains}
@@ -415,7 +415,7 @@ const SwapBox = observer(({
                     isFullWidth
                     value={state.toToken}
                     menuRenderer={() => (
-                        <TokenOrNetworkRenderer tokenOrNetwork={state.toToken}/>
+                        <TokenOrNetworkRenderer tokenOrNetwork={state.toToken} />
                     )}
                     options={state.fromChain.tokenList /*tokenOptions*/}
                     onClick={() => {
@@ -438,12 +438,12 @@ const SwapBox = observer(({
                     loading={estimateLoading}
                     value={formatValue(toAmount, 4)}
                     disabled
-                    // onChange={e => setState({ ...state, fromamount: e.target.value, toamount: e.target.value })}
-                    // rightEl={
-                    //   <Button width="18px" color="white" onClick={() => setState({ ...state, fromamount: fromBalance?.toString() || "", toamount: fromBalance?.toString() || "" })}>
-                    //     Max
-                    //   </Button>
-                    // }
+                // onChange={e => setState({ ...state, fromamount: e.target.value, toamount: e.target.value })}
+                // rightEl={
+                //   <Button width="18px" color="white" onClick={() => setState({ ...state, fromamount: fromBalance?.toString() || "", toamount: fromBalance?.toString() || "" })}>
+                //     Max
+                //   </Button>
+                // }
                 />
             </Row>
             {/* TO ENDS */}
@@ -465,7 +465,7 @@ const SwapBox = observer(({
             >
                 {getSwapButtonContent()}
             </Button>
-            <PathRenderer path={[state.fromChain, state.toChain]}/>
+            <PathRenderer path={[state.fromChain, state.toChain]} />
             <QuestsModal modal={questModal} />
         </div>
     );
@@ -484,10 +484,10 @@ const PathRenderer = ({ path }: { path: Chain[] }): ReactElement => {
                     justifyContent="center"
                     key={key}
                 >
-                    <TokenOrNetworkRenderer tokenOrNetwork={item} imgSize={20}/>
+                    <TokenOrNetworkRenderer tokenOrNetwork={item} imgSize={20} />
                     {key !== path.length - 1 && (
                         <Icon style={{ color: 'var(--text)', marginLeft: '16px' }}>
-                            <FaChevronRight/>
+                            <FaChevronRight />
                         </Icon>
                     )}
                 </Row>

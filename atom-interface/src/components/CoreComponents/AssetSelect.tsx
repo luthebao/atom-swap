@@ -47,14 +47,14 @@ export default function AssetSelect({
         setOpen(false)
     }
 
-    const allTokens = (data || GlobalStore.getTokenList()).filter(
+    const allTokens = (data || []).filter(
         (val) => search === "" ||
             val.name.toLowerCase().includes(search.toLowerCase()) ||
             val.symbol.toLowerCase().includes(search.toLowerCase()) ||
             val.address.toLowerCase().includes(search.toLowerCase())
     )
 
-        
+
 
     return (
         <React.Fragment>
@@ -76,7 +76,7 @@ export default function AssetSelect({
                     </div>
                 </div>
             </div>
-            <Dialog onClose={onClose} open={open} ref={null}>
+            <Dialog onClose={onClose} open={true} ref={null}>
                 <div className="p-[10px] max-h-[520px] overflow-y-scroll w-[80vw] md:p-[24px] md:w-[450px]">
                     <div className="flex items-center flex-col gap-4">
                         {data && <div className="flex items-center justify-center">

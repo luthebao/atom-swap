@@ -4,40 +4,9 @@ import { baseGoerli, goerli, lineaTestnet, } from "viem/chains"
 export type AddressMap = { [chainId: number]: `0x${string}` }
 export type DextoolMap = { [chainId: number]: string }
 
-export const DEXTOOLS: DextoolMap = {
-    [goerli.id]: "https://www.dextools.io/app/en/ethergoerli/pair-explorer/",
-}
-
-export const WETH: AddressMap = {
-    [lineaTestnet.id]: "0x2C1b868d6596a18e32E61B901E4060C872647b6C",
-}
-
-export const TREASURY_ADDRESS: AddressMap = {
-    [lineaTestnet.id]: "0x171c36da7e5cFa0426dc6152020e87755A6271b9",
-}
-
-export const FACTORY_ADDRESS: AddressMap = {
-    [lineaTestnet.id]: "0x89048366dA528cd3C54Cef2A2793b67A61c74D69",
-}
-
-export const ROUTER_ADDRESS: AddressMap = {
-    [lineaTestnet.id]: "0x11406be0999feFE2847C30c8dDd067A5d9b7da0e",
-}
-
-export const LOCKER_ADDRESS: AddressMap = {
-    [lineaTestnet.id]: "0xaF1AD1933b2cF4453861D17724133528deFaa83F",
-}
-
-export const STORAGE_ADDRESS: AddressMap = {
-    [lineaTestnet.id]: "0x77FF34392AacB8cf0C416f38C93053b77145E424",
-}
-
-export const LAUNCHFACTORY_ADDRESS: AddressMap = {
-    [lineaTestnet.id]: "0x152b306F7782c0Cb9E73d248b1283EB90C36ac84",
-}
-
 interface POOL {
     [chainId: number]: {
+        iconUrl: string
         l0chainid: number
         chainid: number
         FeeCollector: Address
@@ -52,6 +21,7 @@ interface POOL {
 
 export const DEXB: POOL = {
     [goerli.id]: {
+        iconUrl: "/chains/ethereum.svg",
         l0chainid: 10121,
         chainid: goerli.id,
         FeeCollector: "0x355b0A841c702389bD69dbEbbFa24d0Bd70B5b9F",
@@ -60,9 +30,10 @@ export const DEXB: POOL = {
         Bridge: "0xAEC785255E9FC504d9949A7f01B303acDb9E9F41",
         DEXBAggregatorUniswap: "0xF18B5EfCd4d6EfCb5B5585536AadE4CFFB7847Fc",
         Token: "0x2F1Dc3e170afF5dD3AFFc2dBBbF5bC5a4385b2Cc",
-        AssetV2: "0x42457E843Cd0F03435062aF0882b80E221645b51"
+        AssetV2: "0x42457E843Cd0F03435062aF0882b80E221645b51",
     },
     [baseGoerli.id]: {
+        iconUrl: "/chains/base.svg",
         l0chainid: 10160,
         chainid: baseGoerli.id,
         FeeCollector: "0xd3deDCf3d07E4E3657C8022a7fdCE2E54ab9803B",

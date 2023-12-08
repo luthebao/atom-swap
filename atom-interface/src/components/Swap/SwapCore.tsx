@@ -13,13 +13,11 @@ import { withTheme } from '@material-ui/core/styles'
 import { useSearchParams } from 'react-router-dom'
 import GlobalStore, { CurrencyInputType, Quote, SwapInputType, TXHstatus, Token } from '../../store/gobalStore'
 import { MAX_UINT256, devide, formatInputNumber } from '../../configs/utils'
-import { ETHs, WETHs } from '../../configs/tokens'
 import CurrencyInput from '../CoreComponents/CurrencyInput'
 import StrangeToken from './StrangeToken'
 import { useSnapshot } from 'valtio'
 import { ContractFunctionExecutionError, Hash, TransactionExecutionError, formatUnits, parseUnits } from 'viem'
 import { ABI_ROUTER, ABI_WETH } from '../../configs/abi'
-import { DEXTOOLS, ROUTER_ADDRESS, WETH } from '../../configs/addresses'
 import { Address, erc20ABI, useAccount, useNetwork } from 'wagmi'
 import { wagmiCore } from '../../configs/connectors'
 import { toast } from 'react-toastify'
@@ -31,7 +29,7 @@ function SwapCore() {
     const network = useNetwork()
 
     const onSwap = async () => {
-        
+
     }
 
 
@@ -56,13 +54,13 @@ function SwapCore() {
                     </IconButton>
                 </div>
             </div>
-            <CurrencyInput type={SwapInputType.FROM} assetValue={null} onAssetSelect={() => {}} amountValue={"0"} amountChanged={() => {}} />
+            <CurrencyInput type={SwapInputType.FROM} />
             <div className="w-full flex items-center justify-center z-1 h-0">
                 <div className="bg-color-component-iconbtn rounded-[9px] h-[38px] z-10">
-                    <ArrowDownwardIcon className="cursor-pointer p-[6px] !text-[30px] bg-color-component-input m-1 rounded-md" onClick={() => {}} />
+                    <ArrowDownwardIcon className="cursor-pointer p-[6px] !text-[30px] bg-color-component-input m-1 rounded-md" onClick={() => { }} />
                 </div>
             </div>
-            <CurrencyInput type={SwapInputType.TO} assetValue={null} onAssetSelect={() => {}} amountValue={"0"} amountChanged={() => {}} />
+            <CurrencyInput type={SwapInputType.TO} />
 
             <div className="flex w-full mt-[10px]">
                 {/* <Button

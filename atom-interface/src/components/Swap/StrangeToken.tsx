@@ -61,13 +61,13 @@ export default function StrangeToken({
                         <button className="bg-color-text4 hover:bg-color-bg7 w-full font-bold text-2xl p-3 rounded-2xl"
                             onClick={() => {
                                 if (token.data) {
-                                    GlobalStore.setBaseTokens({
-                                        name: token.data.name,
-                                        decimals: token.data.decimals,
-                                        symbol: token.data.symbol,
-                                        address: token.data.address,
-                                        chainId: globalstore.currentChain.id,
-                                    })
+                                    // GlobalStore.setBaseTokens({
+                                    //     name: token.data.name,
+                                    //     decimals: token.data.decimals,
+                                    //     symbol: token.data.symbol,
+                                    //     address: token.data.address,
+                                    //     chainId: globalstore.currentChain.id,
+                                    // })
                                 } else {
                                     setSearchParams()
                                 }

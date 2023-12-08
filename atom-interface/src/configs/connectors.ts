@@ -3,7 +3,6 @@ import {
 } from '@rainbow-me/rainbowkit'
 import { Chain, configureChains, createConfig } from 'wagmi'
 import { publicProvider } from 'wagmi/providers/public'
-// import { lineaTestnet } from 'wagmi/chains'
 import * as wagmiCore from "wagmi/actions"
 
 import {
