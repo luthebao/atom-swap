@@ -37,7 +37,7 @@ export default function CurrencyInput({
 
     return (
         <div className="mt-[2px] mb-[2px] relative">
-            <div className="w-full flex items-center justify-end absolute top-[8px]">
+            {/* <div className="w-full flex items-center justify-end absolute top-[8px]">
                 <div className="flex justify-end pr-[12px] pb-[6px] cursor-pointer">
                     {
                         assetValue && <Typography className="!font-thin !text-[12px] text-color-text2 !mr-[6px] !mt-[6px]" noWrap onClick={() => {
@@ -49,9 +49,9 @@ export default function CurrencyInput({
                         </Typography>
                     }
                 </div>
-            </div>
-            <div className={`flex flex-wrap rounded-[10px] w-full items-center bg-color-component-input ${(isError && type === SwapInputType.FROM) ? "border-[1px] border-solid border-color-border1" : ""}`}>
-                <div className="w-[124px] [124px] h-full flex">
+            </div> */}
+            <div className={`flex flex-wrap rounded-[10px] w-full h-[20px] items-center bg-color-component-input ${(isError && type === SwapInputType.FROM) ? "border-[1px] border-solid border-color-border1" : ""}`}>
+                {/* <div className="w-[124px] [124px] h-full flex">
                     <AssetSelect type={type} onSelect={onAssetSelect} assetValue={assetValue} data={list} loading={loading} />
                 </div>
                 <div className="flex-1 h-full">
@@ -68,7 +68,7 @@ export default function CurrencyInput({
                         }}
                     />
                     <Typography color='textSecondary' className="!text-[12px] !mt-0 !mb-0">{assetValue?.name} - {assetValue?.symbol}</Typography>
-                </div>
+                </div> */}
             </div>
         </div>
     )

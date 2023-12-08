@@ -17,67 +17,12 @@ import {
     trustWallet,
     walletConnectWallet,
 } from '@rainbow-me/rainbowkit/wallets';
-import { lineaTestnet, scroll, scrollSepolia } from 'viem/chains';
-
-
-export const opBNBTestnet: Chain = {
-    id: 5611,
-    name: "opBNB Testnet",
-    network: "opbnb-testnet",
-    nativeCurrency: {
-        name: "Testnet BNB",
-        symbol: "tBNB",
-        decimals: 18,
-    },
-    rpcUrls: {
-        default: {
-            http: ["https://opbnb-testnet-rpc.bnbchain.org"]
-        },
-        public: {
-            http: ["https://opbnb-testnet-rpc.bnbchain.org"]
-        },
-    },
-    blockExplorers: {
-        default: {
-            name: "opBNB Testnet Explorer",
-            url: "https://opbnbscan.com/"
-        }
-    },
-    testnet: true
-}
-
-export const lineaMainnet: Chain = {
-    id: 59144,
-    name: "Linea",
-    network: "linea-mainnet",
-    nativeCurrency: {
-        name: "Ether",
-        symbol: "ETH",
-        decimals: 18,
-    },
-    rpcUrls: {
-        default: {
-            http: ["https://rpc.linea.build"]
-        },
-        public: {
-            http: ["https://rpc.linea.build"]
-        },
-    },
-    blockExplorers: {
-        default: {
-            name: "Linea Scan",
-            url: "https://lineascan.build"
-        }
-    },
-}
+import { baseGoerli, goerli } from 'viem/chains';
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
     [
-        // goerli,
-        // lineaTestnet,
-        // lineaMainnet,
-        scrollSepolia,
-        scroll,
+        goerli,
+        baseGoerli
     ],
     [
         publicProvider()
@@ -142,4 +87,4 @@ const wagmiConfig = createConfig({
 })
 
 
-export { chains as wagmiChains, wagmiConfig, lineaTestnet as mainChain, publicClient, wagmiCore }
+export { chains as wagmiChains, wagmiConfig, goerli as mainChain, publicClient, wagmiCore }

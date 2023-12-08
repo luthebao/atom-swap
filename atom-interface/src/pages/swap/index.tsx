@@ -11,7 +11,6 @@ function Swap() {
     return (
         <div className="w-full flex flex-col justify-center relative mt-[100px]">
             <SwapContainer />
-            {/* <Hack /> */}
         </div>
     );
 }
