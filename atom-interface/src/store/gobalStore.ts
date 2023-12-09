@@ -103,13 +103,33 @@ const GlobalStore = {
     setCurrentChain(value: Chain | null) {
         state.currentChain = value
         state.fromToken = null
+        if (value && state.toChain?.id === value.id) {
+            state.toChain = null
+        }
+
         this.getStepSwap()
     },
     setToChain(value: Chain | null) {
         state.toChain = value
         state.toToken = null
+        if (value && state.currentChain?.id === value.id) {
+            state.currentChain = null
+        }
+
         this.getStepSwap()
     },
+    setSwapInput() {
+        const MID_Chain = state.currentChain
+        state.currentChain = state.toChain
+        state.toChain = MID_Chain
+
+        const MID_Token = state.fromToken
+        state.fromToken = state.toToken
+        state.toToken = MID_Token
+
+        this.getStepSwap()
+    },
+
     setFromToken(value: Token | null) {
         state.fromToken = value
         this.getStepSwap()
