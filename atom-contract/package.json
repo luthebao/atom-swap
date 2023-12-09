@@ -13,6 +13,7 @@
     "deploy1": "yarn hardhat run ./scripts/1-pool.ts",
     "deploy2": "yarn hardhat run ./scripts/2-asset.ts",
     "deploy3": "yarn hardhat run ./scripts/3-setup.ts",
+    "deploy4": "yarn hardhat run ./scripts/4-approve.ts",
     "test": "yarn run build && yarn hardhat test",
     "coverage": "yarn run build && yarn cross-env NODE_OPTIONS=\"--max_old_space_size=8192\" hardhat coverage --temp artifacts --max-memory 4096"
   },

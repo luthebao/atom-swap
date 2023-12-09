@@ -13,9 +13,11 @@ export default {
     },
     baseGoerli: {
       url: "https://goerli.base.org",
+      gasPrice: 10000000,
       accounts: [
         "3b9fac5e9fb4672db9e7d73ed07b83e0fd579d823a4c5aaf51af6b9c61ee48db"
       ],
+
     }
   },
   etherscan: {
@@ -30,7 +32,8 @@ export default {
         urls: {
           apiURL: "https://api-goerli.basescan.org/api",
           browserURL: "https://goerli.basescan.org/"
-        }
+        },
+
       },
     ]
   },

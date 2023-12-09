@@ -15,7 +15,7 @@ interface POOL {
     }
 }
 
-const DEXB: POOL = {
+export const DEXB: POOL = {
     "goerli": {
         chainid: 10121,
         chainrpc: 5,

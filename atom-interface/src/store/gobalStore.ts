@@ -62,15 +62,22 @@ export enum LiquidityInputType {
     PAIR
 }
 
+export enum SWAPSTATE {
+    INPUT,
+    QUOTE,
+    SUBMIT
+}
+
 export type CurrencyInputType = SwapInputType | LiquidityInputType
 
 interface GlobalState {
-    currentChain: Chain
-    toChain: Chain
+    currentChain: Chain | null
+    toChain: Chain | null
     fromToken: Token | null
     toToken: Token | null
     fromAmount: Ether
     toAmount: Ether
+    swapstate: SWAPSTATE
 
     openQueue: boolean
     txQueue: Transaction[]
@@ -79,11 +86,12 @@ interface GlobalState {
 
 const state = proxy<GlobalState>({
     currentChain: mainChain,
-    toChain: baseGoerli,
+    toChain: null,
     fromToken: null,
     toToken: null,
     fromAmount: "0",
     toAmount: "0",
+    swapstate: SWAPSTATE.INPUT,
 
     openQueue: false,
     txQueue: [],
@@ -92,34 +100,44 @@ const state = proxy<GlobalState>({
 
 const GlobalStore = {
     state,
-    setCurrentChain(value: Chain | undefined | null) {
-        if (value) {
-            state.currentChain = value
-        } else {
-            state.currentChain = mainChain
-        }
+    setCurrentChain(value: Chain | null) {
+        state.currentChain = value
+        state.fromToken = null
+        this.getStepSwap()
     },
-    setToChain(value: Chain | undefined | null) {
-        if (value) {
-            state.toChain = value
-        } else {
-            state.toChain = baseGoerli
-        }
+    setToChain(value: Chain | null) {
+        state.toChain = value
+        state.toToken = null
+        this.getStepSwap()
     },
     setFromToken(value: Token | null) {
         state.fromToken = value
+        this.getStepSwap()
     },
     setToToken(value: Token | null) {
         state.toToken = value
+        this.getStepSwap()
     },
 
     setFromAmount(value: string) {
         state.fromAmount = formatInputNumber(value) as Ether
+        state.toAmount = "0"
+        this.getStepSwap()
     },
     setToAmount(value: string) {
         state.toAmount = formatInputNumber(value) as Ether
+        this.getStepSwap()
     },
 
+    getStepSwap() {
+        if (state.currentChain === null || state.toChain === null || state.fromToken === null || state.toToken === null || Number(state.fromAmount) <= 0) {
+            state.swapstate = SWAPSTATE.INPUT
+        } else if (Number(state.toAmount) <= 0) {
+            state.swapstate = SWAPSTATE.QUOTE
+        } else {
+            state.swapstate = SWAPSTATE.SUBMIT
+        }
+    },
     setOpenQueue(value: boolean) {
         state.openQueue = value
         const isDone = state.txQueue.length > 0 && state.txQueue.filter((tx) => { return [TXHstatus.DONE, TXHstatus.CONFIRMED, TXHstatus.REJECTED].includes(tx.status) }).length === state.txQueue.length

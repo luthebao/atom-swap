@@ -11,42 +11,157 @@ import {
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward'
 import { withTheme } from '@material-ui/core/styles'
 import { useSearchParams } from 'react-router-dom'
-import GlobalStore, { CurrencyInputType, Quote, SwapInputType, TXHstatus, Token } from '../../store/gobalStore'
+import GlobalStore, { CurrencyInputType, Quote, SWAPSTATE, SwapInputType, TXHstatus, Token } from '../../store/gobalStore'
 import { MAX_UINT256, devide, formatInputNumber } from '../../configs/utils'
 import CurrencyInput from '../CoreComponents/CurrencyInput'
-import StrangeToken from './StrangeToken'
 import { useSnapshot } from 'valtio'
-import { ContractFunctionExecutionError, Hash, TransactionExecutionError, formatUnits, parseUnits } from 'viem'
-import { ABI_ROUTER, ABI_WETH } from '../../configs/abi'
-import { Address, erc20ABI, useAccount, useNetwork } from 'wagmi'
+import { ContractFunctionExecutionError, Hash, TransactionExecutionError, formatUnits, parseUnits, zeroAddress } from 'viem'
+import { Address, erc20ABI, useAccount, useChainId, useNetwork, useSignTypedData } from 'wagmi'
 import { wagmiCore } from '../../configs/connectors'
 import { toast } from 'react-toastify'
-import { MdCandlestickChart, MdRefresh, MdOutlineSettings } from "react-icons/md";
+import { MdCandlestickChart, MdRefresh, MdOutlineSettings, MdSwapCalls } from "react-icons/md";
+import { useChainModal, useConnectModal } from '@rainbow-me/rainbowkit'
+import { DEXB } from '../../configs/addresses'
+import { ABI_DEXB, ABI_UNISWAP } from '../../configs/abi'
 
 function SwapCore() {
     const globalstore = useSnapshot(GlobalStore.state)
+    const chainid = useChainId()
+    const [loading, setLoading] = useState(false)
+    const { openConnectModal } = useConnectModal();
+    const { openChainModal } = useChainModal();
+    const { signTypedDataAsync } = useSignTypedData({})
     const account = useAccount()
-    const network = useNetwork()
 
     const onSwap = async () => {
+        setLoading(true)
+        if (globalstore.currentChain === null || globalstore.toChain === null || globalstore.fromToken === null || globalstore.toToken === null || Number(globalstore.fromAmount) <= 0) {
+            toast("Invalid Input")
+        }
+        // else if (Number(globalstore.toAmount) <= 0) {
+        //     const sendFromAmount0 = parseUnits(globalstore.fromAmount, globalstore.fromToken.decimals)
 
+        //     let addy0 = globalstore.fromToken.address
+        //     let addy1 = globalstore.toToken.address
+
+        //     if (globalstore.fromToken.address === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
+        //         addy0 = DEXB[globalstore.currentChain.id].WETH
+        //     }
+
+        //     if (globalstore.toToken.address === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
+        //         addy1 = DEXB[globalstore.toChain.id].WETH
+        //     }
+
+        //     const result0 = await wagmiCore.readContract({
+        //         abi: ABI_UNISWAP,
+        //         address: DEXB[globalstore.currentChain.id].Uniswap,
+        //         functionName: "getAmountsOut",
+        //         args: [
+        //             sendFromAmount0,
+        //             [
+        //                 addy0 as Address, DEXB[globalstore.currentChain.id].Token
+        //             ]
+        //         ]
+        //     })
+
+        //     if (result0.length !== 2) {
+        //         toast("Can not find pair")
+        //         return
+        //     }
+
+        //     console.log("result0", result0)
+
+        //     const sendFromAmount1 = result0[1] / 100000000000n
+
+        //     const result1 = await wagmiCore.readContract({
+        //         abi: ABI_UNISWAP,
+        //         address: DEXB[globalstore.toChain.id].Uniswap,
+        //         functionName: "getAmountOut",
+        //         args: [
+        //             sendFromAmount1,
+        //             sendFromAmount1,
+        //             sendFromAmount1,
+        //         ]
+        //     })
+
+        //     console.log(result1)
+
+        // }
+        else {
+            const sendFromAmount0 = parseUnits(globalstore.fromAmount, globalstore.fromToken.decimals)
+            const signature = await signTypedDataAsync({
+                domain: {
+                    name: "DEXB Swap",
+                    version: "0.0.1",
+                    chainId: globalstore.currentChain.id,
+                    verifyingContract: DEXB[globalstore.currentChain.id].DEXBAggregatorUniswap,
+                },
+                types: {
+                    Parameters: [
+                        { name: 'receiver', type: 'address' },
+                        { name: 'lwsPoolId', type: 'uint16' },
+                        { name: 'hgsPoolId', type: 'uint16' },
+                        { name: 'dstToken', type: 'address' },
+                        { name: 'minHgsAmount', type: 'uint256' },
+                    ]
+                },
+                primaryType: 'Parameters',
+                message: {
+                    receiver: account.address as Address,
+                    lwsPoolId: 1,
+                    hgsPoolId: 1,
+                    dstToken: globalstore.toToken.address,
+                    minHgsAmount: sendFromAmount0 * 0n / 100n,
+                },
+
+            });
+
+            console.log("signature", signature)
+
+            try {
+                const write = await wagmiCore.writeContract({
+                    abi: ABI_DEXB,
+                    address: DEXB[globalstore.currentChain.id].DEXBAggregatorUniswap,
+                    functionName: "startSwap",
+                    args: [
+                        {
+                            srcToken: globalstore.fromToken.address as Address,
+                            srcAmount: sendFromAmount0 * 90n / 100n,
+                            lwsPoolId: 1,
+                            hgsPoolId: 1,
+                            dstToken: globalstore.toToken.address as Address,
+                            dstChain: DEXB[globalstore.toChain.id].l0chainid,
+                            dstAggregatorAddress: DEXB[globalstore.toChain.id].DEXBAggregatorUniswap,
+                            minHgsAmount: sendFromAmount0 * 0n / 100n,
+                            signature: signature,
+                        }
+                    ],
+                    value: sendFromAmount0,
+                })
+                const hash = write.hash
+                const wait2 = await wagmiCore.waitForTransaction({
+                    confirmations: globalstore.confirmations,
+                    hash: hash
+                })
+                console.log(wait2, hash)
+            } catch (error) {
+                console.log(error)
+            }
+
+
+        }
+        setLoading(false)
     }
 
 
     return (
         <div className="flex flex-col w-full">
             <div className='flex flex-row justify-between mb-1'>
-                <IconButton className="p-2 cursor-pointer !bg-none !hover:bg-color-bg9 !rounded-md" onClick={() => {
-                    // if (DEXTOOLS[globalstore.currentChain.id] && toAssetValue) {
-                    //     window.open(DEXTOOLS[globalstore.currentChain.id] + toAssetValue.address, "_blank", "noreferrer")
-                    // }
-                }}>
+                <IconButton className="p-2 cursor-pointer !bg-none !hover:bg-color-bg9 !rounded-md" onClick={() => { }}>
                     <MdCandlestickChart className='text-2xl' />
                 </IconButton>
                 <div className='flex flex-row'>
-                    <IconButton className="p-2 cursor-pointer !bg-none !hover:bg-color-bg9 !rounded-md" onClick={() => {
-                        // calculateReceiveAmount(fromAmountValue, fromAssetValue, toAssetValue)
-                    }}>
+                    <IconButton className="p-2 cursor-pointer !bg-none !hover:bg-color-bg9 !rounded-md" onClick={() => { }}>
                         <MdRefresh className='text-2xl' />
                     </IconButton>
                     <IconButton className="p-2 cursor-pointer !bg-none !hover:bg-color-bg9 !rounded-md">
@@ -55,32 +170,55 @@ function SwapCore() {
                 </div>
             </div>
             <CurrencyInput type={SwapInputType.FROM} />
-            <div className="w-full flex items-center justify-center z-1 h-0">
-                <div className="bg-color-component-iconbtn rounded-[9px] h-[38px] z-10">
-                    <ArrowDownwardIcon className="cursor-pointer p-[6px] !text-[30px] bg-color-component-input m-1 rounded-md" onClick={() => { }} />
+            <div className="w-full flex items-center justify-center mt-5 mb-4">
+                <div className="bg-color-component-iconbtn rounded-[9px]">
+                    <MdSwapCalls className="cursor-pointer p-[6px] !text-[35px] bg-color-component-input m-1 rounded-md" onClick={() => { }} />
                 </div>
             </div>
             <CurrencyInput type={SwapInputType.TO} />
 
-            <div className="flex w-full mt-[10px]">
-                {/* <Button
-                    variant='contained'
-                    size='large'
-                    color='primary'
-                    className="!bg-color-component-tab !text-color-text-btn w-full !font-[700] disabled:!bg-color-component-disabled disabled:!text-color-text-btn -disabled"
-                    disabled={!(fromAssetValue && toAssetValue) || !(quote || (fromAssetValue && toAssetValue && natives.includes(fromAssetValue.address.toLowerCase()) && natives.includes(toAssetValue.address.toLowerCase()))) || loading || quoteLoading || !(account.isConnected && account.address) || network.chain?.unsupported}
-                    onClick={onSwap}
-                >
-                    <Typography className='!font-bold'>
-                        {
-                            loading ? `Swapping` :
-                                fromAssetValue && toAssetValue && natives.includes(fromAssetValue.address.toLowerCase()) && natives.includes(toAssetValue.address.toLowerCase()) ?
-                                    fromAssetValue.address === "" ? "WRAP" : "UN-WRAP"
-                                    : `Swap`
-                        }
-                    </Typography>
-                    {(loading) && <CircularProgress size={10} />}
-                </Button> */}
+            <div className="flex flex-col py-5 px-4">
+                {
+                    openConnectModal ? (
+                        <Button
+                            variant='contained'
+                            size='large'
+                            color='primary'
+                            className="!bg-[#FFFFFF] !text-[#000000] w-full"
+                            onClick={openConnectModal}
+                        >
+                            <Typography className='!font-bold'>
+                                Connect Wallet
+                            </Typography>
+                        </Button>
+                    ) : (openChainModal && chainid !== globalstore.currentChain?.id) ? (
+                        <Button
+                            variant='contained'
+                            size='large'
+                            color='primary'
+                            className="!bg-[#FFFFFF] !text-[#000000] w-full"
+                            onClick={openChainModal}
+                        >
+                            <Typography className='!font-bold'>
+                                Switch Network
+                            </Typography>
+                        </Button>
+                    ) : <Button
+                        variant='contained'
+                        size='large'
+                        color='primary'
+                        className="!bg-[#FFFFFF] !text-[#000000]"
+                        onClick={onSwap}
+                    >
+                        <Typography className='font-[400]'>
+                            {
+                                loading ? `Processing` :
+                                    globalstore.swapstate === SWAPSTATE.QUOTE ? `Get Quote` : `Swap`
+                            }
+                        </Typography>
+                        {(loading) && <CircularProgress size={10} />}
+                    </Button>
+                }
             </div>
             {/* <QuoteInfomation quoteError={quoteError} isLoading={loading || quoteLoading} quote={quote} from={fromAssetValue?.symbol} to={toAssetValue?.symbol} slippage={slippage} setSlippage={setSlippage} /> */}
             {/* <StrangeToken show={isStrangeToken} /> */}

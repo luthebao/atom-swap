@@ -1,20 +1,9 @@
-import { Navigate, Route, Routes, redirect } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import Layout from "./layout/layout";
 import Swap from "./pages/swap";
-import { useNetwork } from "wagmi";
-import { useEffect } from "react";
-import GlobalStore from "./store/gobalStore";
 
 
 export default function Router() {
-    const currentChain = useNetwork()
-
-    useEffect(() => {
-        GlobalStore.setCurrentChain(currentChain.chain)
-    }, [currentChain.chain])
-
-    useEffect(() => {
-    }, [])
 
     return (
         <Routes>

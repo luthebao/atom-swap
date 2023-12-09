@@ -16,6 +16,8 @@ interface POOL {
         DEXBAggregatorUniswap: Address
         Token: Address
         AssetV2: Address
+        Uniswap: Address
+        WETH: Address
     }
 }
 
@@ -31,6 +33,8 @@ export const DEXB: POOL = {
         DEXBAggregatorUniswap: "0xF18B5EfCd4d6EfCb5B5585536AadE4CFFB7847Fc",
         Token: "0x2F1Dc3e170afF5dD3AFFc2dBBbF5bC5a4385b2Cc",
         AssetV2: "0x42457E843Cd0F03435062aF0882b80E221645b51",
+        Uniswap: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
+        WETH: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
     },
     [baseGoerli.id]: {
         iconUrl: "/chains/base.svg",
@@ -43,5 +47,7 @@ export const DEXB: POOL = {
         DEXBAggregatorUniswap: "0x71803af23F3be02311490A2a6C479c880ef5d48d",
         Token: "0x9f2A50A859Eaded1c80116c4384378d056839ABB",
         AssetV2: "0x737873BC769682533181fF35E3d4C7C132d76d2D",
+        Uniswap: "0xe8399bcC8cA1308cE798C2c84eA41b4C5FB51704",
+        WETH: "0x231401dC8b53338d78c08f83CC4EBc74148196d0",
     }
 }
