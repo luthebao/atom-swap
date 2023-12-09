@@ -14,6 +14,7 @@
     "deploy2": "yarn hardhat run ./scripts/2-liquid.ts",
     "deploy3": "yarn hardhat run ./scripts/3-setup.ts",
     "deploy4": "yarn hardhat run ./scripts/4-approve.ts",
+    "deploy5": "yarn hardhat run ./scripts/5-removeLP.ts",
     "test": "yarn run build && yarn hardhat test",
     "coverage": "yarn run build && yarn cross-env NODE_OPTIONS=\"--max_old_space_size=8192\" hardhat coverage --temp artifacts --max-memory 4096"
   },

@@ -30,7 +30,16 @@ const LAYER0ADD: LAYER0 = {
 
 async function main() {
     const accounts = await hre.ethers.getSigners();
+    const account = accounts[0].address;
     const network = hre.network.name
+    console.log(`Submit transactions with account: ${account} on ${network}`)
+
+    const prompt = require('prompt-sync')();
+    const iscontinue = prompt("continue (y/n/_): ")
+    if (iscontinue !== "y") {
+        console.log("end")
+        return
+    }
 
     const FeeCollector = await Deployer.deployContract("FeeCollector", [])
     await Deployer.verifyContract(FeeCollector.address, [])
@@ -61,7 +70,7 @@ async function main() {
     const DEXBAggregatorUniswap = await Deployer.deployContract("DEXBAggregatorUniswap", [])
     await Deployer.verifyContract(DEXBAggregatorUniswap.address, [])
 
-    const Token = await Deployer.deployContract("Token", [])
+    const Token = await Deployer.deployContract("TestUSD", [])
     await Deployer.verifyContract(Token.address, [])
 
     const AssetV2 = await Deployer.deployContract("AssetV2", [
@@ -82,7 +91,7 @@ async function main() {
         LAYER0ADD[network].weth, // WETH,
         accounts[0].address
     )
-
+    console.log("DEXBAggregatorUniswap initial")
 
     console.log("//", hre.network.name)
     console.log("// FeeCollector:", FeeCollector.address)

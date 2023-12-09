@@ -17,7 +17,7 @@ async function main() {
         return
     }
 
-    const Token = await ethers.getContractFactory("Token")
+    const Token = await ethers.getContractFactory("TestUSD")
     await (await Token.attach(DEXB[network].Token).mint(DEXB[network].AssetV2, "1000000000000000000000000")).wait(confirmnum)
     console.log("mint token to AssetV2", DEXB[network].AssetV2)
 
@@ -57,7 +57,7 @@ async function main() {
             2,
             DEXB[network].AssetV2
         )).wait(confirmnum)
-        console.log("AssetRouter createChainPath native")
+        console.log("AssetRouter createChainPath", element.chainid)
     }
 
     const DEXBAggregatorUniswap = (await ethers.getContractFactory("DEXBAggregatorUniswap")).attach(DEXB[network].DEXBAggregatorUniswap)

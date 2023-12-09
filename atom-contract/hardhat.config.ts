@@ -8,14 +8,14 @@ export default {
     goerli: {
       url: "https://rpc.ankr.com/eth_goerli",
       accounts: [
-        "c83d303f2f607d257d67c52866da74ef897bca7f18072bafe67099037598e598"
+        "bbccee8ec3cdcc444de94da5c3566c647b168172ff133732cf260cf5f44b7b39"
       ],
     },
     baseGoerli: {
       url: "https://goerli.base.org",
       // gasPrice: 10000000,
       accounts: [
-        "c83d303f2f607d257d67c52866da74ef897bca7f18072bafe67099037598e598"
+        "bbccee8ec3cdcc444de94da5c3566c647b168172ff133732cf260cf5f44b7b39"
       ],
     }
   },

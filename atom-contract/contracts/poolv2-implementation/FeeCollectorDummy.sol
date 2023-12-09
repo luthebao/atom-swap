@@ -32,9 +32,9 @@ contract FeeCollectorDummy is IFeeCollectorV2, AccessControl {
 
     function withdraw(
         IERC20 token_,
-        uint256 amount_
+        uint256 amount__
     ) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        token_.safeTransfer(msg.sender, amount_);
+        token_.safeTransfer(msg.sender, amount__);
     }
 
     function withdrawAll(IERC20 token_) external {

@@ -577,7 +577,7 @@ contract AssetRouter is IAssetRouter, AccessControl, ReentrancyGuard {
     }
 
     /**
-     * @notice returns the effective path to move funds from A to B
+     * @notice returns the effective path to move funds from A to Bb
      * @param _dstChainId the destination chain id
      * @param _amountToSimulate the amount to simulate to get the right path
      */

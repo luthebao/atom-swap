@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-// imports
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -12,7 +11,14 @@ import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
 import "./interfaces/IAssetV2.sol";
 import "hardhat/console.sol";
 
-contract AssetV2 is IAssetV2, ERC20, ERC20Burnable, ERC20Permit, ReentrancyGuard, AccessControl {
+contract AssetV2 is
+    IAssetV2,
+    ERC20,
+    ERC20Burnable,
+    ERC20Permit,
+    ReentrancyGuard,
+    AccessControl
+{
     using SafeERC20 for IERC20;
 
     uint256 public constant BP_DENOMINATOR = 10_000;
@@ -41,7 +47,10 @@ contract AssetV2 is IAssetV2, ERC20, ERC20Burnable, ERC20Permit, ReentrancyGuard
         _setupRole(ROUTER_ROLE, msg.sender);
     }
 
-    function mint(address _to, uint256 _amountLD) external nonReentrant onlyRole(ROUTER_ROLE) returns (uint256) {
+    function mint(
+        address _to,
+        uint256 _amountLD
+    ) external nonReentrant onlyRole(ROUTER_ROLE) returns (uint256) {
         return _mintInternal(_to, _amountLD, true);
     }
 
@@ -52,7 +61,10 @@ contract AssetV2 is IAssetV2, ERC20, ERC20Burnable, ERC20Permit, ReentrancyGuard
         mintfeePercentage = _feePercentage;
     }
 
-    function release(address _to, uint256 _amount) external onlyRole(ROUTER_ROLE) {
+    function release(
+        address _to,
+        uint256 _amount
+    ) external onlyRole(ROUTER_ROLE) {
         _token.safeTransfer(_to, _amount);
     }
 
@@ -64,7 +76,11 @@ contract AssetV2 is IAssetV2, ERC20, ERC20Burnable, ERC20Permit, ReentrancyGuard
         return address(_token);
     }
 
-    function _mintInternal(address _to, uint256 _amount, bool _feesEnabled) internal returns (uint256) {
+    function _mintInternal(
+        address _to,
+        uint256 _amount,
+        bool _feesEnabled
+    ) internal returns (uint256) {
         uint256 fee;
         if (_feesEnabled) {
             fee = (_amount * mintfeePercentage) / BP_DENOMINATOR;

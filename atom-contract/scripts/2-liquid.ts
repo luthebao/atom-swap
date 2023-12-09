@@ -8,7 +8,7 @@ async function main() {
     const accounts = await hre.ethers.getSigners();
     const account = accounts[0].address;
     const network = hre.network.name;
-    const confirmnum = 2
+    const confirmnum = 1
     console.log(`Submit transactions with account: ${account} on ${network}`)
 
     const prompt = require('prompt-sync')();
@@ -18,7 +18,7 @@ async function main() {
         return
     }
 
-    const Token = (await ethers.getContractFactory("Token")).attach(DEXB[network].Token)
+    const Token = (await ethers.getContractFactory("TestUSD")).attach(DEXB[network].Token)
     const IUniswapV2Router02 = await ethers.getContractAt("IUniswapV2Router02", DEXB[network].uniswap)
 
     await (await Token.approve(DEXB[network].uniswap, "115792089237316195423570985008687907853269984665640564039457584007913129639935")).wait(confirmnum)

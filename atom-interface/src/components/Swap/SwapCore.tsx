@@ -124,7 +124,7 @@ function SwapCore() {
                     lwsPoolId: 1,
                     hgsPoolId: 1,
                     dstToken: globalstore.toToken.address,
-                    minHgsAmount: 10n,
+                    minHgsAmount: 0n,
                 },
 
             });
@@ -137,7 +137,7 @@ function SwapCore() {
                 dstToken: globalstore.toToken.address as Address,
                 dstChain: DEXB[globalstore.toChain.id].l0chainid,
                 dstAggregatorAddress: DEXB[globalstore.toChain.id].DEXBAggregatorUniswap,
-                minHgsAmount: 10n,
+                minHgsAmount: 0n,
                 signature: signature,
             })
 
@@ -149,17 +149,17 @@ function SwapCore() {
                     args: [
                         {
                             srcToken: globalstore.fromToken.address as Address,
-                            srcAmount: sendFromAmount0,
+                            srcAmount: sendFromAmount0 * 60n / 100n,
                             lwsPoolId: 1,
                             hgsPoolId: 1,
                             dstToken: globalstore.toToken.address as Address,
                             dstChain: DEXB[globalstore.toChain.id].l0chainid,
                             dstAggregatorAddress: DEXB[globalstore.toChain.id].DEXBAggregatorUniswap,
-                            minHgsAmount: 10n,
+                            minHgsAmount: 0n,
                             signature: signature,
                         }
                     ],
-                    value: sendFromAmount0 * 120n / 100n,
+                    value: sendFromAmount0,
                     gasPrice: 500000n
                 })
                 const hash = write.hash
@@ -169,6 +169,7 @@ function SwapCore() {
                 })
                 console.log(wait2, hash)
             } catch (error: unknown) {
+                console.log(error)
                 if (error instanceof TransactionExecutionError) {
                     toast(error.shortMessage)
                 } else if (error instanceof ContractFunctionExecutionError) {

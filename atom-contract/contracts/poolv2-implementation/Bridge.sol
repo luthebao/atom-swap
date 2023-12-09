@@ -1,17 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 import "@openzeppelin/contracts/access/AccessControl.sol";
-
 import "./interfaces/IAssetRouter.sol";
 import "./interfaces/ILayerZeroReceiver.sol";
 import "./interfaces/ILayerZeroEndpoint.sol";
 import "./interfaces/ILayerZeroUserApplicationConfig.sol";
 import "./interfaces/IBridge.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-
-// import "hardhat/console.sol";
 
 contract Bridge is AccessControl, IBridge {
     using SafeMath for uint256;

@@ -36,8 +36,6 @@ contract DEXBAggregatorUniswap is AccessControl, ReentrancyGuard, EIP712 {
     struct SwapParams {
         IERC20 srcToken;
         uint256 srcAmount;
-        //        address router1Inch;
-        //        bytes data;
         uint16 lwsPoolId;
         uint16 hgsPoolId;
         IERC20 dstToken;
@@ -50,13 +48,9 @@ contract DEXBAggregatorUniswap is AccessControl, ReentrancyGuard, EIP712 {
     struct ContinueSwapParams {
         uint16 srcChainId;
         bytes32 id;
-        //        address router1Inch;
-        //        bytes data;
     }
 
     struct PayloadData {
-        //        uint256 srcChainId;
-        //        address srcAggregatorAddress;
         uint16 lwsPoolId;
         uint16 hgsPoolId;
         IERC20 dstToken;
@@ -252,14 +246,6 @@ contract DEXBAggregatorUniswap is AccessControl, ReentrancyGuard, EIP712 {
             data := add(data, 32)
             let payloadPtr := payload
 
-            //            mstore(payloadPtr, mload(data)) // uint256 srcChainId
-            //            data := add(data, 32)
-            //            payloadPtr := add(payloadPtr, 32)
-            //
-            //            mstore(payloadPtr, shr(96, mload(data))) // address srcAggregatorAddress
-            //            data := add(data, 20)
-            //            payloadPtr := add(payloadPtr, 32)
-
             mstore(payloadPtr, shr(240, mload(data))) // uint16 lwsPoolId
             data := add(data, 2)
             payloadPtr := add(payloadPtr, 32)
@@ -321,8 +307,6 @@ contract DEXBAggregatorUniswap is AccessControl, ReentrancyGuard, EIP712 {
             uint256 dstBefore = payload.dstToken.balanceOf(address(this));
 
             _approve(hgsToken, address(uniswap), swapMsg.amount);
-            //            (bool success, ) = params.router1Inch.call{ value: 0 }(params.data);
-            //            require(success, "!inSuccess");
             uniswapSwap(hgsToken, payload.dstToken, swapMsg.amount);
             uint256 unspentAmount = hgsToken.balanceOf(address(this)) -
                 hgsBefore;

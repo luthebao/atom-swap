@@ -16,7 +16,7 @@ async function main() {
         return
     }
 
-    const Token = (await ethers.getContractFactory("Token")).attach(DEXB[network].Token)
+    const Token = (await ethers.getContractFactory("TestUSD")).attach(DEXB[network].Token)
 
     await (await Token.approve(DEXB[network].AssetRouter, "115792089237316195423570985008687907853269984665640564039457584007913129639935")).wait(confirmnum)
     console.log("Token approve AssetRouter")
