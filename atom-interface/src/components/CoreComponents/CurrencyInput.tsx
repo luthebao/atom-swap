@@ -156,15 +156,20 @@ export default function CurrencyInput({
                         </div>
                     </div>
                 </Dialog>
-                <input
-                    disabled={type === SwapInputType.TO}
-                    className="flex flex-grow focus:outline-none justify-between border border-[#4a4a4a] p-2 h-[58px] items-center gap-2 rounded-r-[10px] bg-transparent" placeholder="Enter amount"
-                    value={type === SwapInputType.FROM ? globalStore.fromAmount : globalStore.toAmount}
-                    onChange={(e) => {
-                        type === SwapInputType.FROM && GlobalStore.setFromAmount(e.target.value)
-                    }}
+                <div className='flex flex-grow relative'>
+                    <input
+                        disabled={type === SwapInputType.TO}
+                        className="w-full focus:outline-none justify-between border border-[#4a4a4a] p-2 h-[58px] items-center gap-2 rounded-r-[10px] bg-transparent" placeholder="Enter amount"
+                        value={type === SwapInputType.FROM ? globalStore.fromAmount : globalStore.toAmount}
+                        onChange={(e) => {
+                            type === SwapInputType.FROM && GlobalStore.setFromAmount(e.target.value)
+                        }}
+                    />
+                    {/* {type === SwapInputType.FROM && (<button className="absolute end-2.5 bottom-3.5 border rounded-[5px] p-1 items-center">
+                        max
+                    </button>)} */}
+                </div>
 
-                />
             </div>
         </div>
     )
