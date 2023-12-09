@@ -100,48 +100,49 @@ function SwapCore() {
 
         }
         else {
-            console.log(globalstore.fromAmount)
-            const sendFromAmount0 = parseUnits(globalstore.fromAmount, globalstore.fromToken.decimals)
-            const signature = await signTypedDataAsync({
-                domain: {
-                    name: "DEXB Swap",
-                    version: "0.0.1",
-                    chainId: globalstore.currentChain.id,
-                    verifyingContract: DEXB[globalstore.currentChain.id].DEXBAggregatorUniswap,
-                },
-                types: {
-                    Parameters: [
-                        { name: 'receiver', type: 'address' },
-                        { name: 'lwsPoolId', type: 'uint16' },
-                        { name: 'hgsPoolId', type: 'uint16' },
-                        { name: 'dstToken', type: 'address' },
-                        { name: 'minHgsAmount', type: 'uint256' },
-                    ]
-                },
-                primaryType: 'Parameters',
-                message: {
-                    receiver: account.address as Address,
+            try {
+                console.log(globalstore.fromAmount)
+                const sendFromAmount0 = parseUnits(globalstore.fromAmount, globalstore.fromToken.decimals)
+
+                const signature = await signTypedDataAsync({
+                    domain: {
+                        name: "DEXB Swap",
+                        version: "0.0.1",
+                        chainId: globalstore.currentChain.id,
+                        verifyingContract: DEXB[globalstore.currentChain.id].DEXBAggregatorUniswap,
+                    },
+                    types: {
+                        Parameters: [
+                            { name: 'receiver', type: 'address' },
+                            { name: 'lwsPoolId', type: 'uint16' },
+                            { name: 'hgsPoolId', type: 'uint16' },
+                            { name: 'dstToken', type: 'address' },
+                            { name: 'minHgsAmount', type: 'uint256' },
+                        ]
+                    },
+                    primaryType: 'Parameters',
+                    message: {
+                        receiver: account.address as Address,
+                        lwsPoolId: 1,
+                        hgsPoolId: 1,
+                        dstToken: globalstore.toToken.address,
+                        minHgsAmount: 0n,
+                    },
+
+                });
+
+                console.log("signature", signature, {
+                    srcToken: globalstore.fromToken.address as Address,
+                    srcAmount: sendFromAmount0 * 50n / 100n,
                     lwsPoolId: 1,
                     hgsPoolId: 1,
-                    dstToken: globalstore.toToken.address,
+                    dstToken: globalstore.toToken.address as Address,
+                    dstChain: DEXB[globalstore.toChain.id].l0chainid,
+                    dstAggregatorAddress: DEXB[globalstore.toChain.id].DEXBAggregatorUniswap,
                     minHgsAmount: 0n,
-                },
-
-            });
-
-            console.log("signature", signature, {
-                srcToken: globalstore.fromToken.address as Address,
-                srcAmount: sendFromAmount0 * 50n / 100n,
-                lwsPoolId: 1,
-                hgsPoolId: 1,
-                dstToken: globalstore.toToken.address as Address,
-                dstChain: DEXB[globalstore.toChain.id].l0chainid,
-                dstAggregatorAddress: DEXB[globalstore.toChain.id].DEXBAggregatorUniswap,
-                minHgsAmount: 0n,
-                signature: signature,
-            })
-
-            try {
+                    signature: signature,
+                })
+                
                 const write = await wagmiCore.writeContract({
                     abi: ABI_DEXB,
                     address: DEXB[globalstore.currentChain.id].DEXBAggregatorUniswap,
@@ -178,8 +179,6 @@ function SwapCore() {
                     toast("Unknown error")
                 }
             }
-
-
         }
         setLoading(false)
     }
