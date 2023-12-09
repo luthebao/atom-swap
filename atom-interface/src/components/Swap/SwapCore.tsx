@@ -38,55 +38,67 @@ function SwapCore() {
         if (globalstore.currentChain === null || globalstore.toChain === null || globalstore.fromToken === null || globalstore.toToken === null || Number(globalstore.fromAmount) <= 0) {
             toast("Invalid Input")
         }
-        // else if (Number(globalstore.toAmount) <= 0) {
-        //     const sendFromAmount0 = parseUnits(globalstore.fromAmount, globalstore.fromToken.decimals)
+        else if (Number(globalstore.toAmount) <= 0) {
+            const sendFromAmount0 = parseUnits(globalstore.fromAmount, globalstore.fromToken.decimals)
 
-        //     let addy0 = globalstore.fromToken.address
-        //     let addy1 = globalstore.toToken.address
+            let addy0 = globalstore.fromToken.address
+            let addy1 = globalstore.toToken.address
 
-        //     if (globalstore.fromToken.address === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
-        //         addy0 = DEXB[globalstore.currentChain.id].WETH
-        //     }
+            if (globalstore.fromToken.address === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
+                addy0 = DEXB[globalstore.currentChain.id].WETH
+            }
 
-        //     if (globalstore.toToken.address === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
-        //         addy1 = DEXB[globalstore.toChain.id].WETH
-        //     }
+            if (globalstore.toToken.address === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
+                addy1 = DEXB[globalstore.toChain.id].WETH
+            }
 
-        //     const result0 = await wagmiCore.readContract({
-        //         abi: ABI_UNISWAP,
-        //         address: DEXB[globalstore.currentChain.id].Uniswap,
-        //         functionName: "getAmountsOut",
-        //         args: [
-        //             sendFromAmount0,
-        //             [
-        //                 addy0 as Address, DEXB[globalstore.currentChain.id].Token
-        //             ]
-        //         ]
-        //     })
+            console.log(addy0, addy1, DEXB[globalstore.toChain.id].Token)
 
-        //     if (result0.length !== 2) {
-        //         toast("Can not find pair")
-        //         return
-        //     }
+            const result0 = await wagmiCore.readContract({
+                abi: ABI_UNISWAP,
+                address: DEXB[globalstore.currentChain.id].Uniswap,
+                chainId: globalstore.currentChain.id,
+                functionName: "getAmountsOut",
+                args: [
+                    sendFromAmount0,
+                    [
+                        addy0 as Address, DEXB[globalstore.currentChain.id].Token
+                    ]
+                ]
+            })
 
-        //     console.log("result0", result0)
+            if (result0.length !== 2) {
+                toast("Can not find pair")
+                return
+            }
 
-        //     const sendFromAmount1 = result0[1] / 100000000000n
+            console.log("result0", result0)
 
-        //     const result1 = await wagmiCore.readContract({
-        //         abi: ABI_UNISWAP,
-        //         address: DEXB[globalstore.toChain.id].Uniswap,
-        //         functionName: "getAmountOut",
-        //         args: [
-        //             sendFromAmount1,
-        //             sendFromAmount1,
-        //             sendFromAmount1,
-        //         ]
-        //     })
+            const sendFromAmount1 = result0[1]
 
-        //     console.log(result1)
+            const result1 = await wagmiCore.readContract({
+                abi: ABI_UNISWAP,
+                address: DEXB[globalstore.toChain.id].Uniswap,
+                chainId: globalstore.toChain.id,
+                functionName: "getAmountsOut",
+                args: [
+                    sendFromAmount1,
+                    [
+                        DEXB[globalstore.toChain.id].Token, addy1 as Address
+                    ]
+                ]
+            })
 
-        // }
+            console.log(result1)
+
+            if (result1.length !== 2) {
+                toast("Can not find pair")
+                return
+            }
+            console.log(formatUnits(result1[1], globalstore.toToken.decimals).toString())
+            GlobalStore.setToAmount(formatUnits(result1[1], globalstore.toToken.decimals))
+
+        }
         else {
             console.log(globalstore.fromAmount)
             const sendFromAmount0 = parseUnits(globalstore.fromAmount, globalstore.fromToken.decimals)
@@ -112,12 +124,22 @@ function SwapCore() {
                     lwsPoolId: 1,
                     hgsPoolId: 1,
                     dstToken: globalstore.toToken.address,
-                    minHgsAmount: 0n,
+                    minHgsAmount: 10n,
                 },
 
             });
 
-            console.log("signature", signature)
+            console.log("signature", signature, {
+                srcToken: globalstore.fromToken.address as Address,
+                srcAmount: sendFromAmount0 * 50n / 100n,
+                lwsPoolId: 1,
+                hgsPoolId: 1,
+                dstToken: globalstore.toToken.address as Address,
+                dstChain: DEXB[globalstore.toChain.id].l0chainid,
+                dstAggregatorAddress: DEXB[globalstore.toChain.id].DEXBAggregatorUniswap,
+                minHgsAmount: 10n,
+                signature: signature,
+            })
 
             try {
                 const write = await wagmiCore.writeContract({
@@ -127,17 +149,18 @@ function SwapCore() {
                     args: [
                         {
                             srcToken: globalstore.fromToken.address as Address,
-                            srcAmount: sendFromAmount0 * 50n / 100n,
+                            srcAmount: sendFromAmount0,
                             lwsPoolId: 1,
                             hgsPoolId: 1,
                             dstToken: globalstore.toToken.address as Address,
                             dstChain: DEXB[globalstore.toChain.id].l0chainid,
                             dstAggregatorAddress: DEXB[globalstore.toChain.id].DEXBAggregatorUniswap,
-                            minHgsAmount: 0n,
+                            minHgsAmount: 10n,
                             signature: signature,
                         }
                     ],
-                    value: sendFromAmount0,
+                    value: sendFromAmount0 * 120n / 100n,
+                    gasPrice: 500000n
                 })
                 const hash = write.hash
                 const wait2 = await wagmiCore.waitForTransaction({
@@ -145,8 +168,14 @@ function SwapCore() {
                     hash: hash
                 })
                 console.log(wait2, hash)
-            } catch (error) {
-                console.log(error)
+            } catch (error: unknown) {
+                if (error instanceof TransactionExecutionError) {
+                    toast(error.shortMessage)
+                } else if (error instanceof ContractFunctionExecutionError) {
+                    toast(error.shortMessage)
+                } else {
+                    toast("Unknown error")
+                }
             }
 
 
