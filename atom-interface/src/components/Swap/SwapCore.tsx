@@ -142,7 +142,7 @@ function SwapCore() {
                     minHgsAmount: 0n,
                     signature: signature,
                 })
-                
+
                 const write = await wagmiCore.writeContract({
                     abi: ABI_DEXB,
                     address: DEXB[globalstore.currentChain.id].DEXBAggregatorUniswap,
@@ -169,6 +169,10 @@ function SwapCore() {
                     hash: hash
                 })
                 console.log(wait2, hash)
+                // wait2.status === "success" ? GlobalStore.updateTxQueue(2, TXHstatus.DONE, wait2.transactionHash) : GlobalStore.updateTxQueue(2, TXHstatus.REJECTED)
+                if (wait2.status === "success") {
+                    toast("Swap successfully")
+                }
             } catch (error: unknown) {
                 console.log(error)
                 if (error instanceof TransactionExecutionError) {
@@ -179,6 +183,7 @@ function SwapCore() {
                     toast("Unknown error")
                 }
             }
+            GlobalStore.setToAmount("0")
         }
         setLoading(false)
     }
