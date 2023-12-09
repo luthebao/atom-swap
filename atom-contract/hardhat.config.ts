@@ -8,16 +8,15 @@ export default {
     goerli: {
       url: "https://rpc.ankr.com/eth_goerli",
       accounts: [
-        "3b9fac5e9fb4672db9e7d73ed07b83e0fd579d823a4c5aaf51af6b9c61ee48db"
+        "c83d303f2f607d257d67c52866da74ef897bca7f18072bafe67099037598e598"
       ],
     },
     baseGoerli: {
       url: "https://goerli.base.org",
-      gasPrice: 10000000,
+      // gasPrice: 10000000,
       accounts: [
-        "3b9fac5e9fb4672db9e7d73ed07b83e0fd579d823a4c5aaf51af6b9c61ee48db"
+        "c83d303f2f607d257d67c52866da74ef897bca7f18072bafe67099037598e598"
       ],
-
     }
   },
   etherscan: {

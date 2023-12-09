@@ -39,7 +39,7 @@ export const TokenList = {
             "name": "Wrapped Ether",
             "decimals": 18,
             "symbol": "WETH",
-            "address": "0x231401dC8b53338d78c08f83CC4EBc74148196d0",
+            "address": "0x4200000000000000000000000000000000000006",
             "chainId": 84531,
             "logoURI": "https://assets.coingecko.com/coins/images/2518/large/weth.png"
         },

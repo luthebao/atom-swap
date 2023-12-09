@@ -88,6 +88,7 @@ function SwapCore() {
 
         // }
         else {
+            console.log(globalstore.fromAmount)
             const sendFromAmount0 = parseUnits(globalstore.fromAmount, globalstore.fromToken.decimals)
             const signature = await signTypedDataAsync({
                 domain: {
@@ -111,7 +112,7 @@ function SwapCore() {
                     lwsPoolId: 1,
                     hgsPoolId: 1,
                     dstToken: globalstore.toToken.address,
-                    minHgsAmount: sendFromAmount0 * 0n / 100n,
+                    minHgsAmount: 0n,
                 },
 
             });
@@ -126,13 +127,13 @@ function SwapCore() {
                     args: [
                         {
                             srcToken: globalstore.fromToken.address as Address,
-                            srcAmount: sendFromAmount0 * 90n / 100n,
+                            srcAmount: sendFromAmount0 * 50n / 100n,
                             lwsPoolId: 1,
                             hgsPoolId: 1,
                             dstToken: globalstore.toToken.address as Address,
                             dstChain: DEXB[globalstore.toChain.id].l0chainid,
                             dstAggregatorAddress: DEXB[globalstore.toChain.id].DEXBAggregatorUniswap,
-                            minHgsAmount: sendFromAmount0 * 0n / 100n,
+                            minHgsAmount: 0n,
                             signature: signature,
                         }
                     ],
