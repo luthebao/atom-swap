@@ -81,7 +81,7 @@ const TransactionsQueue = () => {
                         isDone ? <div className="max-w-[400px] m-auto text-center !pb-[20px]">
                             <Lottie loop={false} className="w-[130px] m-auto pl-[0] pr-[0] py-[30px]" animationData={successAnim} />
                             <Typography className="!px-[40px] !py-[0] !text-center !ml-[0] !mr-[0] !my-[20px] !text-[22px] !font-[700]">{'Transaction Successful!'}</Typography>
-                            <Typography className="!px-[40px] !py-[0] !text-center !leading-[1.5rem] !mb-[40px] !text-color-text-subtitle">Transaction has been confirmed by the blockchain.</Typography>
+                            <Typography className="!px-[40px] !py-[0] !text-center !leading-[1.5rem] !mb-[40px] !text-white">Transaction has been confirmed by the blockchain.</Typography>
                             {
                                 global.txQueue.filter(val => val.hash.length > 0).map((val, index) => (
                                     <Typography className="bg-none !ml-[auto] !mr-[auto] !my-[10px] !text-[14px]" key={`txh-scan-${index}`}>

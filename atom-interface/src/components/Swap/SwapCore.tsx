@@ -11,7 +11,7 @@ import { useSearchParams } from 'react-router-dom'
 import GlobalStore, { SWAPSTATE, SwapInputType, TXHstatus } from '../../store/gobalStore'
 import CurrencyInput from '../CoreComponents/CurrencyInput'
 import { useSnapshot } from 'valtio'
-import { ContractFunctionExecutionError, TransactionExecutionError, encodePacked, formatUnits, parseEther, parseUnits } from 'viem'
+import { ContractFunctionExecutionError, TransactionExecutionError, encodePacked, formatUnits, parseAbiItem, parseEther, parseUnits } from 'viem'
 import { Address, erc20ABI, useAccount, useChainId, useSignTypedData } from 'wagmi'
 import { wagmiCore } from '../../configs/connectors'
 import { toast } from 'react-toastify'
@@ -113,6 +113,7 @@ function SwapCore() {
 
     const onSwap = async () => {
         setLoading(true)
+
         if (globalstore.currentChain === null || globalstore.toChain === null || globalstore.fromToken === null || globalstore.toToken === null || Number(globalstore.fromAmount) <= 0) {
             toast("Invalid Input")
         }
@@ -121,6 +122,25 @@ function SwapCore() {
         }
         else {
             try {
+                const logs = await wagmiCore.getPublicClient().getLogs({
+                    address: DEXB[globalstore.currentChain.id].DEXBAggregatorUniswap,
+                    event: {
+                        "anonymous": false,
+                        "inputs": [
+                            {
+                                "indexed": false,
+                                "internalType": "bytes32",
+                                "name": "id",
+                                "type": "bytes32"
+                            }
+                        ],
+                        "name": "NewPendingSwap",
+                        "type": "event"
+                    },
+                    fromBlock: 10184809n,
+                    toBlock: 10184897n,
+                })
+
                 GlobalStore.setTxQueue([
                     {
                         id: 0,
