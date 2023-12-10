@@ -1,28 +1,25 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import {
-    TextField,
     Typography,
-    InputAdornment,
     Button,
     CircularProgress,
-    Tooltip,
     IconButton,
 } from '@material-ui/core'
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward'
 import { withTheme } from '@material-ui/core/styles'
 import { useSearchParams } from 'react-router-dom'
-import GlobalStore, { CurrencyInputType, Quote, SWAPSTATE, SwapInputType, TXHstatus, Token } from '../../store/gobalStore'
-import { MAX_UINT256, devide, formatInputNumber } from '../../configs/utils'
+import GlobalStore, { SWAPSTATE, SwapInputType } from '../../store/gobalStore'
 import CurrencyInput from '../CoreComponents/CurrencyInput'
 import { useSnapshot } from 'valtio'
-import { ContractFunctionExecutionError, Hash, TransactionExecutionError, encodePacked, formatUnits, parseUnits, zeroAddress } from 'viem'
-import { Address, erc20ABI, useAccount, useChainId, useNetwork, useSignTypedData } from 'wagmi'
+import { ContractFunctionExecutionError, TransactionExecutionError, encodePacked, formatUnits, parseUnits } from 'viem'
+import { Address, useAccount, useChainId, useSignTypedData } from 'wagmi'
 import { wagmiCore } from '../../configs/connectors'
 import { toast } from 'react-toastify'
-import { MdCandlestickChart, MdRefresh, MdOutlineSettings, MdSwapCalls } from "react-icons/md";
+import { MdRefresh, MdOutlineSettings, MdSwapCalls } from "react-icons/md";
 import { useChainModal, useConnectModal } from '@rainbow-me/rainbowkit'
 import { DEXB } from '../../configs/addresses'
 import { ABI_ASSET_ROUTER, ABI_DEXB, ABI_UNISWAP } from '../../configs/abi'
+import SwapQuote from './SwapQuote'
 
 function SwapCore() {
     const globalstore = useSnapshot(GlobalStore.state)
@@ -38,6 +35,7 @@ function SwapCore() {
         if (globalstore.currentChain !== null && globalstore.toChain !== null && globalstore.fromToken !== null && globalstore.toToken !== null && Number(globalstore.fromAmount) >= 0) {
             try {
                 GlobalStore.setToAmount("0")
+                GlobalStore.setQuote(null)
                 const sendFromAmount0 = parseUnits(globalstore.fromAmount, globalstore.fromToken.decimals)
 
                 let addy0 = globalstore.fromToken.address
@@ -50,8 +48,6 @@ function SwapCore() {
                 if (globalstore.toToken.address === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
                     addy1 = DEXB[globalstore.toChain.id].WETH
                 }
-
-                console.log(addy0, addy1, DEXB[globalstore.toChain.id].Token)
 
                 const result0 = await wagmiCore.readContract({
                     abi: ABI_UNISWAP,
@@ -71,8 +67,6 @@ function SwapCore() {
                     return
                 }
 
-                console.log("result0", result0)
-
                 const sendFromAmount1 = result0[1]
 
                 const result1 = await wagmiCore.readContract({
@@ -87,8 +81,6 @@ function SwapCore() {
                         ]
                     ]
                 })
-
-                console.log("result1", result1)
 
                 if (result1.length !== 2) {
                     toast("Can not find pair")
@@ -120,7 +112,6 @@ function SwapCore() {
         }
         else {
             try {
-                console.log(globalstore.fromAmount)
                 const sendFromAmount0 = parseUnits(globalstore.fromAmount, globalstore.fromToken.decimals)
 
                 const result0 = await wagmiCore.readContract({
@@ -182,7 +173,7 @@ function SwapCore() {
                     ]
                 )
 
-                const gas = await wagmiCore.getPublicClient().estimateContractGas({
+                const gas1 = await wagmiCore.getPublicClient().estimateContractGas({
                     abi: ABI_ASSET_ROUTER,
                     address: DEXB[globalstore.currentChain.id].AssetRouter,
                     functionName: "swap",
@@ -200,7 +191,22 @@ function SwapCore() {
                     account: account.address as Address,
                 })
 
-                const gasPrice = await wagmiCore.getPublicClient().getGasPrice()
+                const gas2 = await wagmiCore.getPublicClient().estimateContractGas({
+                    abi: ABI_DEXB,
+                    address: DEXB[globalstore.currentChain.id].DEXBAggregatorUniswap,
+                    functionName: "startSwap",
+                    args: [
+                        SWAP_PARAMS
+                    ],
+                    value: sendFromAmount0 * 2n,
+                    account: account.address as Address,
+                })
+
+                let gasPrice = await wagmiCore.getPublicClient().getGasPrice()
+
+                gasPrice = gasPrice < 500000n ? 500000n : gasPrice
+
+                console.log(gasPrice, gas1, gas2, formatUnits((gas1 + gas2) * gasPrice * 100n, 18))
 
                 const write = await wagmiCore.writeContract({
                     abi: ABI_DEXB,
@@ -209,7 +215,7 @@ function SwapCore() {
                     args: [
                         SWAP_PARAMS
                     ],
-                    value: sendFromAmount0 + gas * 500000n * gasPrice
+                    value: sendFromAmount0 + (gas1 + gas2) * gasPrice * 100n
                 })
 
                 const hash = write.hash
@@ -217,8 +223,6 @@ function SwapCore() {
                     confirmations: globalstore.confirmations,
                     hash: hash
                 })
-                console.log(wait2, hash)
-                // wait2.status === "success" ? GlobalStore.updateTxQueue(2, TXHstatus.DONE, wait2.transactionHash) : GlobalStore.updateTxQueue(2, TXHstatus.REJECTED)
                 if (wait2.status === "success") {
                     toast("Swap successfully")
                 }
@@ -237,20 +241,17 @@ function SwapCore() {
         setLoading(false)
     }
 
-
     return (
         <div className="flex flex-col w-full">
             <div className='flex flex-row justify-between mb-1 select-none'>
                 <div className="p-2 cursor-pointer !bg-none !hover:bg-color-bg9 !rounded-md text-lg">Swap</div>
-                {/* <IconButton className="p-2 cursor-pointer !bg-none !hover:bg-color-bg9 !rounded-md" onClick={() => { }}>
-                    <MdCandlestickChart className='text-2xl' />
-                </IconButton> */}
+
                 <div className='flex flex-row'>
                     <IconButton className="p-2 cursor-pointer !bg-none !hover:bg-color-bg9 !rounded-md" onClick={fetchQuote} disabled={loading}>
-                        <MdRefresh className='text-2xl' />
+                        <MdRefresh className={`text-2xl`} />
                     </IconButton>
                     <IconButton className="p-2 cursor-pointer !bg-none !hover:bg-color-bg9 !rounded-md">
-                        <MdOutlineSettings className='text-2xl hover:animate-spin' />
+                        <MdOutlineSettings className={"text-2xl hover:animate-spin"} />
                     </IconButton>
                 </div>
             </div>
@@ -299,7 +300,7 @@ function SwapCore() {
                     >
 
                         {
-                            loading ? <CircularProgress size={19} color="primary" /> :
+                            loading ? <MdRefresh className={`text-[19px] animate-spin`} /> :
                                 <Typography className='!font-[500]'>
                                     {
                                         globalstore.swapstate === SWAPSTATE.QUOTE ? `Get Quote` : `Swap`
@@ -309,94 +310,10 @@ function SwapCore() {
                     </Button>
                 }
             </div>
-            {/* <QuoteInfomation quoteError={quoteError} isLoading={loading || quoteLoading} quote={quote} from={fromAssetValue?.symbol} to={toAssetValue?.symbol} slippage={slippage} setSlippage={setSlippage} /> */}
-            {/* <StrangeToken show={isStrangeToken} /> */}
+
+            <SwapQuote loading={loading} refresh={fetchQuote} />
         </div>
     )
-}
-
-const QuoteInfomation = ({
-    quoteError, isLoading, quote, from, to, slippage, setSlippage
-}: {
-    quoteError?: string | null
-    isLoading: boolean
-    quote?: Quote | null
-    from?: string
-    to?: string
-    slippage: string
-    setSlippage: (v: string) => void
-}) => {
-
-    if (quoteError) {
-        return (
-            <div className="flex items-center justify-center min-h-[100px]">
-                <Typography className="!text-[13px] !font-[200] !border-[1px] !border-solid !border-color-text-btn rounded-[10px] !bg-color-component-tab !p-6 min-w-full">{quoteError}</Typography>
-            </div>
-        )
-    }
-
-    if (quote && quote.amountin > 0n && quote.amountout > 0n && quote.reversein > 0n && quote.reverseout > 0n) {
-        const amIn = Number(devide(quote.amountin, quote.reversein))
-        const amOut = Number(devide(quote.amountout, quote.reverseout))
-        const ratio = amOut / amIn
-        const price_impact = 100 - ratio * 100
-
-        return (
-            <div className="mt-3 p-3 flex flex-wrap rounded-[10px] w-full items-center">
-                <Typography className="w-full !font-[700] !text-color-text-btn !pb-[15px] border-b-[1px] border-solid border-border">Price Info</Typography>
-                <div className="grid grid-cols-3 gap-3 w-full">
-                    <div className="flex flex-col items-center justify-center p-[12px_0px]">
-                        <Typography className="!font-bold !text-[14px] p-[6px_0px]"> {Number(devide(quote.amountin, quote.amountout)).toLocaleString()} </Typography>
-                        <Typography className="!text-[13px] text-color-text2">{`${to} per ${from}`}</Typography>
-                    </div>
-                    <div className="flex flex-col items-center justify-center p-[12px_0px]">
-                        <Typography className="!font-bold !text-[14px] p-[6px_0px]">{Number(devide(quote.amountout, quote.amountin)).toLocaleString()}</Typography>
-                        <Typography className="!text-[13px] text-color-text2">{`${from} per ${to}`}</Typography>
-                    </div>
-                    <div className="flex flex-col items-center justify-center p-[12px_0px]">
-                        <div className="mt-[2px] mb-[2px] relative">
-                            <div className="w-full flex items-center absolute top-0">
-                                <div className="pl-[12px]">
-                                    <Tooltip title="Set 100% for automatic slippage">
-                                        <Typography className="!font-[100] !text-[12px] text-color-text2 !mr-[6px] !mt-[6px]" noWrap>Slippage </Typography>
-                                    </Tooltip>
-                                </div>
-                            </div>
-                            <div className="flex flex-wrap rounded-[10px] w-full items-center bg-color-component-input max-w-[80px] min-h-[50px] p-[20px_12px_4px_12px]">
-                                <TextField
-                                    placeholder='0.00'
-                                    fullWidth
-                                    value={slippage}
-                                    onChange={(e) => setSlippage(formatInputNumber(e.target.value))}
-                                    disabled={false}
-                                    InputProps={{
-                                        endAdornment: <InputAdornment position="end">
-                                            %
-                                        </InputAdornment>,
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {
-                    price_impact > 2 &&
-                    <div className="flex items-center justify-center w-full">
-                        <Typography className={price_impact > 5 ? "!text-[13px] !font-extralight !border-[1px] !border-solid !border-color-border3 rounded-[10px] !bg-color-bg10 !p-[24px] min-w-full" : "!text-[13px] !font-extralight !border-[1px] !border-solid !border-color-text1 rounded-[10px] !bg-color-component-tab !p-[24px] min-w-full"} align='center'>Price impact {price_impact.toLocaleString()}%</Typography>
-                    </div>
-                }
-            </div>
-        )
-    }
-
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center min-h-[100px]">
-                <CircularProgress size={20} />
-            </div>
-        )
-    }
-    return null
 }
 
 export default withTheme(SwapCore)

@@ -6,7 +6,7 @@ import { Dialog, MenuItem, Typography } from '@material-ui/core';
 import { TokenList } from '../../configs/tokens';
 import { uriToHttp } from '../../configs/utils';
 import { useState } from 'react';
-import { Chain, useNetwork } from 'wagmi';
+import { Address, Chain, useAccount, useBalance, useNetwork } from 'wagmi';
 
 const SelectTokenButton = ({
     token
@@ -16,12 +16,12 @@ const SelectTokenButton = ({
 
     return (
         <div className="flex gap-2 mr-3">
-            <div>
+            <div className="hidden md:block">
                 <img width={25} height={25} src={token ? `${uriToHttp(token.logoURI || token.symbol)[0]}` : '/tokens/unknown-logo.png'} alt="" />
             </div>
-            <div className='text-base'>
+            <div className="text-base">
                 {
-                    token ? token.name : "Select Token"
+                    token ? token.symbol : "Select Token"
                 }
             </div>
         </div>
@@ -36,7 +36,7 @@ const SelectNetworkButton = ({
 
     return (
         <div className="flex gap-2 mr-3">
-            <div>
+            <div className="hidden md:block">
                 <img width={25} height={25} src={network ? DEXB[network.id].iconUrl : '/tokens/unknown-logo.png'} alt="" />
             </div>
             <div className='text-base'>
@@ -52,11 +52,19 @@ export default function CurrencyInput({
     type: SwapInputType,
 }) {
     const network = useNetwork()
+    const account = useAccount()
     const globalStore = useSnapshot(GlobalStore.state)
     const allTokens = TokenList.tokens.filter(val => val.chainId === (type === SwapInputType.FROM ? (globalStore.currentChain?.id || 0) : (globalStore.toChain?.id || 0)))
 
     const [showTokens, setShowTokens] = useState(false)
     const [showChains, setShowChains] = useState(false)
+
+    const balance = useBalance({
+        token: type === SwapInputType.FROM ? globalStore.fromToken?.address.replace("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", "") as Address : globalStore.toToken?.address.replace("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", "") as Address,
+        chainId: type === SwapInputType.FROM ? globalStore.currentChain?.id : globalStore.toChain?.id,
+        address: account.address,
+        watch: true
+    })
 
     return (
         <div className="relative px-3 pt-2 pb-3">
@@ -67,11 +75,11 @@ export default function CurrencyInput({
                     }
                 </div>
                 <div>
-                    Balance: 0
+                    Balance: {balance.data?.formatted || 0}
                 </div>
             </div>
             <div className={`flex w-full`}>
-                <button className="flex justify-between border !border-r-0 border-[#4a4a4a] p-2 h-[58px] items-center gap-2 min-w-[180px] rounded-l-[10px] hover:bg-[#171b21] select-none"
+                <button className="flex justify-between border !border-r-0 border-[#4a4a4a] p-2 h-[58px] items-center gap-2 md:min-w-[180px] rounded-l-[10px] hover:bg-[#171b21] select-none"
                     onClick={() => setShowChains(true)}
                 >
                     <SelectNetworkButton network={type === SwapInputType.FROM ? globalStore.currentChain : globalStore.toChain} />
@@ -79,7 +87,7 @@ export default function CurrencyInput({
                         <FaCaretDown />
                     </div>
                 </button>
-                <button className="flex justify-between border !border-r-0 border-[#4a4a4a] p-2 h-[58px] items-center gap-2 min-w-[200px] hover:bg-[#171b21] select-none" onClick={() => setShowTokens(true)}>
+                <button className="flex justify-between border !border-r-0 border-[#4a4a4a] p-2 h-[58px] items-center gap-2 md:min-w-[200px] hover:bg-[#171b21] select-none" onClick={() => setShowTokens(true)}>
                     <SelectTokenButton token={type === SwapInputType.FROM ? globalStore.fromToken : globalStore.toToken} />
                     <div className="flex flex-end">
                         <FaCaretDown />

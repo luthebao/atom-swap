@@ -42,11 +42,8 @@ export interface Transaction {
 }
 
 export interface Quote {
-    amountin: bigint
-    amountout: bigint
-    stable: boolean
-    reversein: bigint
-    reverseout: bigint
+    dstfee: bigint
+    minHgsAmount: bigint
 }
 
 export enum SwapInputType {
@@ -54,21 +51,11 @@ export enum SwapInputType {
     TO
 }
 
-export enum LiquidityInputType {
-    FROM,
-    TO,
-    ASSET0,
-    ASSET1,
-    PAIR
-}
-
 export enum SWAPSTATE {
     INPUT,
     QUOTE,
     SUBMIT
 }
-
-export type CurrencyInputType = SwapInputType | LiquidityInputType
 
 interface GlobalState {
     currentChain: Chain | null
@@ -78,6 +65,7 @@ interface GlobalState {
     fromAmount: Ether
     toAmount: Ether
     swapstate: SWAPSTATE
+    quote: Quote | null
 
     openQueue: boolean
     txQueue: Transaction[]
@@ -92,6 +80,7 @@ const state = proxy<GlobalState>({
     fromAmount: "0",
     toAmount: "0",
     swapstate: SWAPSTATE.INPUT,
+    quote: null,
 
     openQueue: false,
     txQueue: [],
@@ -103,18 +92,20 @@ const GlobalStore = {
     setCurrentChain(value: Chain | null) {
         state.currentChain = value
         state.fromToken = null
-        if (value && state.toChain?.id === value.id) {
+        if (value && state.toChain?.id === value.id && state.fromToken && state.fromToken === state.toToken) {
             state.toChain = null
         }
-
+        state.toAmount = "0"
+        
         this.getStepSwap()
     },
     setToChain(value: Chain | null) {
         state.toChain = value
         state.toToken = null
-        if (value && state.currentChain?.id === value.id) {
+        if (value && state.currentChain?.id === value.id && state.fromToken && state.fromToken === state.toToken) {
             state.currentChain = null
         }
+        state.toAmount = "0"
 
         this.getStepSwap()
     },
@@ -132,11 +123,25 @@ const GlobalStore = {
 
     setFromToken(value: Token | null) {
         state.fromToken = value
+        if (value && state.currentChain?.id === state.toChain?.id && value.symbol === state.toToken?.symbol) {
+            state.toToken = null
+        }
+        state.toAmount = "0"
+
         this.getStepSwap()
     },
     setToToken(value: Token | null) {
         state.toToken = value
+        if (value && state.currentChain?.id === state.toChain?.id && value.symbol === state.fromToken?.symbol) {
+            state.fromToken = null
+        }
+        state.toAmount = "0"
+
         this.getStepSwap()
+    },
+
+    setQuote(value: Quote | null) {
+        state.quote = value
     },
 
     setFromAmount(value: string) {
