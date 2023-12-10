@@ -4,7 +4,7 @@ import { DEXB } from '../../configs/addresses'
 import { FaCaretDown } from "react-icons/fa"
 import { Dialog, MenuItem, Typography } from '@material-ui/core';
 import { TokenList } from '../../configs/tokens';
-import { uriToHttp } from '../../configs/utils';
+import { NATIVE_TOKEN, uriToHttp } from '../../configs/utils';
 import { useState } from 'react';
 import { Address, Chain, useAccount, useBalance, useNetwork } from 'wagmi';
 
@@ -60,7 +60,7 @@ export default function CurrencyInput({
     const [showChains, setShowChains] = useState(false)
 
     const balance = useBalance({
-        token: type === SwapInputType.FROM ? globalStore.fromToken?.address.replace("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", "") as Address : globalStore.toToken?.address.replace("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", "") as Address,
+        token: type === SwapInputType.FROM ? globalStore.fromToken?.address.replace(NATIVE_TOKEN, "") as Address : globalStore.toToken?.address.replace(NATIVE_TOKEN, "") as Address,
         chainId: type === SwapInputType.FROM ? globalStore.currentChain?.id : globalStore.toChain?.id,
         address: account.address,
         watch: true
@@ -87,7 +87,7 @@ export default function CurrencyInput({
                         <FaCaretDown />
                     </div>
                 </button>
-                <button className="flex justify-between border !border-r-0 border-[#4a4a4a] p-2 h-[58px] items-center gap-2 md:min-w-[200px] hover:bg-[#171b21] select-none" onClick={() => setShowTokens(true)}>
+                <button className="flex justify-between border border-[#4a4a4a] p-2 h-[58px] items-center gap-2 md:min-w-[200px] hover:bg-[#171b21] select-none" onClick={() => setShowTokens(true)}>
                     <SelectTokenButton token={type === SwapInputType.FROM ? globalStore.fromToken : globalStore.toToken} />
                     <div className="flex flex-end">
                         <FaCaretDown />
@@ -96,7 +96,7 @@ export default function CurrencyInput({
                 <div className='flex flex-grow relative'>
                     <input
                         disabled={type === SwapInputType.TO}
-                        className="w-full focus:outline-none justify-between border border-[#4a4a4a] p-2 h-[58px] items-center gap-2 rounded-r-[10px] bg-transparent" placeholder="Enter amount"
+                        className="w-full focus:outline-none justify-between border !border-l-0 border-[#4a4a4a] p-2 h-[58px] items-center gap-2 rounded-r-[10px] bg-transparent" placeholder="Enter amount"
                         value={type === SwapInputType.FROM ? globalStore.fromAmount : globalStore.toAmount}
                         onChange={(e) => {
                             type === SwapInputType.FROM && GlobalStore.setFromAmount(e.target.value)

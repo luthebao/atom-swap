@@ -8,11 +8,11 @@ import {
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward'
 import { withTheme } from '@material-ui/core/styles'
 import { useSearchParams } from 'react-router-dom'
-import GlobalStore, { SWAPSTATE, SwapInputType } from '../../store/gobalStore'
+import GlobalStore, { SWAPSTATE, SwapInputType, TXHstatus } from '../../store/gobalStore'
 import CurrencyInput from '../CoreComponents/CurrencyInput'
 import { useSnapshot } from 'valtio'
 import { ContractFunctionExecutionError, TransactionExecutionError, encodePacked, formatUnits, parseUnits } from 'viem'
-import { Address, useAccount, useChainId, useSignTypedData } from 'wagmi'
+import { Address, erc20ABI, useAccount, useChainId, useSignTypedData } from 'wagmi'
 import { wagmiCore } from '../../configs/connectors'
 import { toast } from 'react-toastify'
 import { MdRefresh, MdOutlineSettings, MdSwapCalls } from "react-icons/md";
@@ -20,6 +20,8 @@ import { useChainModal, useConnectModal } from '@rainbow-me/rainbowkit'
 import { DEXB } from '../../configs/addresses'
 import { ABI_ASSET_ROUTER, ABI_DEXB, ABI_UNISWAP } from '../../configs/abi'
 import SwapQuote from './SwapQuote'
+import { MAX_UINT256, NATIVE_TOKEN } from '../../configs/utils'
+import { FaSpinner } from 'react-icons/fa'
 
 function SwapCore() {
     const globalstore = useSnapshot(GlobalStore.state)
@@ -41,11 +43,11 @@ function SwapCore() {
                 let addy0 = globalstore.fromToken.address
                 let addy1 = globalstore.toToken.address
 
-                if (globalstore.fromToken.address === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
+                if (globalstore.fromToken.address === NATIVE_TOKEN) {
                     addy0 = DEXB[globalstore.currentChain.id].WETH
                 }
 
-                if (globalstore.toToken.address === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
+                if (globalstore.toToken.address === NATIVE_TOKEN) {
                     addy1 = DEXB[globalstore.toChain.id].WETH
                 }
 
@@ -87,6 +89,9 @@ function SwapCore() {
                     return
                 }
 
+                GlobalStore.setQuote({
+                    minHgsAmount: result1[0]
+                })
                 GlobalStore.setToAmount(formatUnits(result1[1], globalstore.toToken.decimals))
             } catch (error: unknown) {
                 console.log(error)
@@ -107,26 +112,84 @@ function SwapCore() {
         if (globalstore.currentChain === null || globalstore.toChain === null || globalstore.fromToken === null || globalstore.toToken === null || Number(globalstore.fromAmount) <= 0) {
             toast("Invalid Input")
         }
-        else if (Number(globalstore.toAmount) <= 0) {
+        else if (Number(globalstore.toAmount) <= 0 || globalstore.quote === null) {
             await fetchQuote()
         }
         else {
             try {
                 const sendFromAmount0 = parseUnits(globalstore.fromAmount, globalstore.fromToken.decimals)
+                let allowance0: bigint = 0n
 
-                const result0 = await wagmiCore.readContract({
-                    abi: ABI_UNISWAP,
-                    address: DEXB[globalstore.currentChain.id].Uniswap,
-                    chainId: globalstore.currentChain.id,
-                    functionName: "getAmountsOut",
-                    args: [
-                        sendFromAmount0,
-                        [
-                            DEXB[globalstore.currentChain.id].WETH, DEXB[globalstore.currentChain.id].Token
-                        ]
-                    ]
-                })
+                GlobalStore.setTxQueue([
+                    {
+                        id: 0,
+                        name: `Checking your ${globalstore.fromToken.symbol} allowance`,
+                        status: TXHstatus.WAITING,
+                        hash: ""
+                    },
+                    {
+                        id: 1,
+                        name: `Signing Transaction`,
+                        status: TXHstatus.WAITING,
+                        hash: ""
+                    },
+                    {
+                        id: 2,
+                        name: `Swap ${globalstore.fromAmount} ${globalstore.fromToken.symbol} (${globalstore.currentChain.name}) to ${globalstore.toToken.symbol} (${globalstore.toChain.name})`,
+                        status: TXHstatus.WAITING,
+                        hash: ""
+                    },
+                ])
 
+                if (globalstore.fromToken.address !== NATIVE_TOKEN) {
+                    while (true) {
+                        allowance0 = await wagmiCore.readContract({
+                            abi: erc20ABI,
+                            address: globalstore.fromToken.address as Address,
+                            functionName: "allowance",
+                            args: [account.address as Address, DEXB[globalstore.currentChain.id].DEXBAggregatorUniswap],
+                        })
+                        if (allowance0 < parseUnits(globalstore.fromAmount, globalstore.fromToken.decimals)) {
+                            try {
+                                GlobalStore.updateTxQueue(0, TXHstatus.PENDING)
+                                const approve0 = await wagmiCore.writeContract({
+                                    abi: erc20ABI,
+                                    address: globalstore.fromToken.address as Address,
+                                    functionName: "approve",
+                                    args: [
+                                        DEXB[globalstore.currentChain.id].DEXBAggregatorUniswap,
+                                        MAX_UINT256
+                                    ]
+                                })
+                                GlobalStore.updateTxQueue(0, TXHstatus.SUBMITTED)
+                                const await0 = await wagmiCore.waitForTransaction({
+                                    confirmations: globalstore.confirmations,
+                                    hash: approve0.hash
+                                })
+                                await0.status === "success" ? GlobalStore.updateTxQueue(0, TXHstatus.DONE) : GlobalStore.updateTxQueue(0, TXHstatus.REJECTED)
+                            } catch (error: unknown) {
+                                GlobalStore.updateTxQueue(0, TXHstatus.REJECTED)
+                                if (error instanceof TransactionExecutionError) {
+                                    toast(error.shortMessage)
+                                } else if (error instanceof ContractFunctionExecutionError) {
+                                    toast(error.shortMessage)
+                                } else {
+                                    toast("Unknown error")
+                                }
+                                break;
+                            }
+                        } else {
+                            allowance0 = MAX_UINT256
+                            GlobalStore.updateTxQueue(0, TXHstatus.DONE)
+                            break;
+                        }
+                    }
+                } else {
+                    allowance0 = MAX_UINT256
+                    GlobalStore.updateTxQueue(0, TXHstatus.DONE)
+                }
+
+                GlobalStore.updateTxQueue(1, TXHstatus.PENDING)
                 const signature = await signTypedDataAsync({
                     domain: {
                         name: "DEXB Swap",
@@ -149,11 +212,12 @@ function SwapCore() {
                         lwsPoolId: 1,
                         hgsPoolId: 1,
                         dstToken: globalstore.toToken.address,
-                        minHgsAmount: result0[1] * 60n / 100n,
+                        minHgsAmount: globalstore.quote.minHgsAmount * 60n / 100n,
                     },
-
                 });
+                GlobalStore.updateTxQueue(1, TXHstatus.DONE)
 
+                GlobalStore.updateTxQueue(2, TXHstatus.PENDING)
                 const SWAP_PARAMS = {
                     srcToken: globalstore.fromToken.address as Address,
                     srcAmount: sendFromAmount0,
@@ -162,7 +226,7 @@ function SwapCore() {
                     dstToken: globalstore.toToken.address as Address,
                     dstChain: DEXB[globalstore.toChain.id].l0chainid,
                     dstAggregatorAddress: DEXB[globalstore.toChain.id].DEXBAggregatorUniswap,
-                    minHgsAmount: result0[1] * 60n / 100n,
+                    minHgsAmount: globalstore.quote.minHgsAmount * 60n / 100n,
                     signature: signature,
                 }
 
@@ -181,7 +245,7 @@ function SwapCore() {
                         srcPoolId: 1,
                         dstPoolId: 1,
                         dstChainId: DEXB[globalstore.toChain.id].l0chainid,
-                        amount: result0[1],
+                        amount: globalstore.quote.minHgsAmount,
                         minAmount: 0n,
                         refundAddress: account.address as Address,
                         to: DEXB[globalstore.toChain.id].DEXBAggregatorUniswap,
@@ -223,11 +287,17 @@ function SwapCore() {
                     confirmations: globalstore.confirmations,
                     hash: hash
                 })
+
                 if (wait2.status === "success") {
-                    toast("Swap successfully")
+                    GlobalStore.updateTxQueue(2, TXHstatus.DONE)
+                } else {
+                    GlobalStore.updateTxQueue(2, TXHstatus.REJECTED)
                 }
             } catch (error: unknown) {
                 console.log(error)
+                GlobalStore.updateTxQueue(0, TXHstatus.REJECTED)
+                GlobalStore.updateTxQueue(1, TXHstatus.REJECTED)
+                GlobalStore.updateTxQueue(2, TXHstatus.REJECTED)
                 if (error instanceof TransactionExecutionError) {
                     toast(error.shortMessage)
                 } else if (error instanceof ContractFunctionExecutionError) {
@@ -300,7 +370,7 @@ function SwapCore() {
                     >
 
                         {
-                            loading ? <MdRefresh className={`text-[19px] animate-spin`} /> :
+                            loading ? <FaSpinner className={`text-[19px] animate-spin`} /> :
                                 <Typography className='!font-[500]'>
                                     {
                                         globalstore.swapstate === SWAPSTATE.QUOTE ? `Get Quote` : `Swap`

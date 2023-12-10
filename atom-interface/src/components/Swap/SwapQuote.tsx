@@ -17,7 +17,7 @@ const SwapQuote = ({
 
     return (
         <div className="relative px-3 pt-2 pb-3">
-            <div className={`flex flex-col w-full`}>
+            <div className={`flex flex-col w-full gap-2`}>
                 <div className="flex justify-between border border-[#4a4a4a] p-2 h-[58px] items-center gap-2 md:min-w-[180px] rounded-[10px] select-none">
                     <div className="flex gap-2 mr-3">
                         <div className='text-base'>
@@ -30,6 +30,16 @@ const SwapQuote = ({
                             <MdRefresh className={`text-2xl ${loading ? "animate-spin" : ""}`} />
                         </IconButton>
                     </div>}
+                </div>
+                <div className="flex justify-between border border-[#4a4a4a] p-2 h-[58px] items-center gap-2 md:min-w-[180px] rounded-[10px] select-none">
+                    <div className="flex gap-2 mr-3">
+                        <div className='text-base'>
+                            Swap fee
+                        </div>
+                    </div>
+                    <div className="flex flex-end items-center">
+                        <span>0 ETH</span>
+                    </div>
                 </div>
             </div>
         </div>

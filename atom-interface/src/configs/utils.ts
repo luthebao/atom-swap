@@ -1,4 +1,5 @@
 import { NFTStorage, File } from "nft.storage"
+import { Address } from "viem";
 
 const NFTStorageToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGY0OWM1RkExMDU3RGVBOWYzZERBMWQ3ZjZBN0NmNThDMjY4YzFmNkUiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY4NzQwNDgzOTk4NiwibmFtZSI6ImVuc3VyZXIifQ.GEVR_ZCPSLYkqEmMss4vdKwPKp5ue02hds-CSvP5jYg"
 
@@ -57,4 +58,6 @@ export function formatInputNumber(number: string): string {
     return number.replace(/[^0-9,.]/g, '').replace(",", ".")
 }
 
-export const MAX_UINT256 = BigInt(2) ** BigInt(256) - 1n
+export const MAX_UINT256: bigint = BigInt(2) ** BigInt(256) - 1n
+
+export const NATIVE_TOKEN: Address = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"

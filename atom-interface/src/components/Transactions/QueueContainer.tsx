@@ -85,7 +85,7 @@ const TransactionsQueue = () => {
                             {
                                 global.txQueue.filter(val => val.hash.length > 0).map((val, index) => (
                                     <Typography className="bg-none !ml-[auto] !mr-[auto] !my-[10px] !text-[14px]" key={`txh-scan-${index}`}>
-                                        <a className='!text-color-text-btn hover:!text-white' target="_blank" href={`${global.currentChain?.blockExplorers?.default.url}/search?f=0&q=${val.hash}`} >{val.name.length > 0 ? val.name : 'View in Explorer'} <OpenInNewIcon className="!text-[15px] -mb-[2px] ml-[3px]" /></a>
+                                        <a className='!text-color-text-btn hover:!text-white' target="_blank" href={`https://testnet.layerzeroscan.com/tx/${val.hash}`} >{val.name.length > 0 ? val.name : 'View in Explorer'} <OpenInNewIcon className="!text-[15px] -mb-[2px] ml-[3px]" /></a>
                                     </Typography>
                                 ))
                             }

@@ -42,7 +42,6 @@ export interface Transaction {
 }
 
 export interface Quote {
-    dstfee: bigint
     minHgsAmount: bigint
 }
 
