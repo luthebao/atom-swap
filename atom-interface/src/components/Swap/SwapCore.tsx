@@ -321,7 +321,7 @@ function SwapCore() {
                 })
 
                 if (wait2.status === "success") {
-                    GlobalStore.updateTxQueue(2, TXHstatus.DONE)
+                    GlobalStore.updateTxQueue(2, TXHstatus.DONE, wait2.transactionHash)
                 } else {
                     GlobalStore.updateTxQueue(2, TXHstatus.REJECTED)
                 }
