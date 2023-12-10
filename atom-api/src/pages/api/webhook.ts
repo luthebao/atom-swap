@@ -39,7 +39,8 @@ export default async function handler(
                 toBlock: "latest",
             })
 
-            logs0.forEach(async elm => {
+            for (let i2 = 0; i2 < logs0.length; i2++) {
+                const elm = logs0[i2]
                 const ctread = await element.client.readContract({
                     address: element.DEXBAggregatorUniswap,
                     abi: ABI_DEXB,
@@ -63,7 +64,7 @@ export default async function handler(
                         srcChainId: element.l0chainid
                     }
                 }
-            });
+            }
         }
         console.log(logs)
         if (logs !== undefined) {
