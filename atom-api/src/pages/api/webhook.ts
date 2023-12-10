@@ -63,7 +63,11 @@ export default async function handler(
                         l0chainid: dstELM.l0chainid,
                         srcChainId: element.l0chainid
                     }
+                    break
                 }
+            }
+            if (logs !== undefined) {
+                break
             }
         }
         console.log(logs)
