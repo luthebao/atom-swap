@@ -18,11 +18,15 @@ import {
 } from '@rainbow-me/rainbowkit/wallets';
 import { baseGoerli, goerli } from 'viem/chains';
 
+const CHAINS_lIST = [
+    goerli,
+    baseGoerli,
+]
+
+const mainChain = CHAINS_lIST[0]
+
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-    [
-        goerli,
-        baseGoerli
-    ],
+    CHAINS_lIST,
     [
         publicProvider()
     ]
@@ -86,4 +90,4 @@ const wagmiConfig = createConfig({
 })
 
 
-export { chains as wagmiChains, wagmiConfig, goerli as mainChain, publicClient, wagmiCore }
+export { chains as wagmiChains, wagmiConfig, mainChain, publicClient, wagmiCore, CHAINS_lIST }

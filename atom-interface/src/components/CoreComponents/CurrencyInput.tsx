@@ -7,6 +7,7 @@ import { TokenList } from '../../configs/tokens';
 import { NATIVE_TOKEN, uriToHttp } from '../../configs/utils';
 import { useState } from 'react';
 import { Address, Chain, useAccount, useBalance, useNetwork } from 'wagmi';
+import { CHAINS_lIST } from '../../configs/connectors';
 
 const SelectTokenButton = ({
     token
@@ -51,7 +52,6 @@ export default function CurrencyInput({
 }: {
     type: SwapInputType,
 }) {
-    const network = useNetwork()
     const account = useAccount()
     const globalStore = useSnapshot(GlobalStore.state)
     const allTokens = TokenList.tokens.filter(val => val.chainId === (type === SwapInputType.FROM ? (globalStore.currentChain?.id || 0) : (globalStore.toChain?.id || 0)))
@@ -151,7 +151,7 @@ export default function CurrencyInput({
                     </div>
                     <div className="w-full flex flex-col mt-[12px]">
                         {
-                            network.chains.map(val => (
+                            CHAINS_lIST.map(val => (
                                 <MenuItem key={val.name} onClick={() => {
                                     if (type === SwapInputType.FROM) {
                                         GlobalStore.setCurrentChain(val)

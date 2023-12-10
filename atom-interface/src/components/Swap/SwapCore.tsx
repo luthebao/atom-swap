@@ -11,7 +11,7 @@ import { useSearchParams } from 'react-router-dom'
 import GlobalStore, { SWAPSTATE, SwapInputType, TXHstatus } from '../../store/gobalStore'
 import CurrencyInput from '../CoreComponents/CurrencyInput'
 import { useSnapshot } from 'valtio'
-import { ContractFunctionExecutionError, TransactionExecutionError, encodePacked, formatUnits, parseUnits } from 'viem'
+import { ContractFunctionExecutionError, TransactionExecutionError, encodePacked, formatUnits, parseEther, parseUnits } from 'viem'
 import { Address, erc20ABI, useAccount, useChainId, useSignTypedData } from 'wagmi'
 import { wagmiCore } from '../../configs/connectors'
 import { toast } from 'react-toastify'
@@ -22,6 +22,10 @@ import { ABI_ASSET_ROUTER, ABI_DEXB, ABI_UNISWAP } from '../../configs/abi'
 import SwapQuote from './SwapQuote'
 import { MAX_UINT256, NATIVE_TOKEN } from '../../configs/utils'
 import { FaSpinner } from 'react-icons/fa'
+
+interface ERROR {
+    shortMessage: string
+}
 
 function SwapCore() {
     const globalstore = useSnapshot(GlobalStore.state)
@@ -117,9 +121,6 @@ function SwapCore() {
         }
         else {
             try {
-                const sendFromAmount0 = parseUnits(globalstore.fromAmount, globalstore.fromToken.decimals)
-                let allowance0: bigint = 0n
-
                 GlobalStore.setTxQueue([
                     {
                         id: 0,
@@ -140,6 +141,17 @@ function SwapCore() {
                         hash: ""
                     },
                 ])
+
+
+                const sendFromAmount0 = parseUnits(globalstore.fromAmount, globalstore.fromToken.decimals)
+                let allowance0: bigint = 0n
+
+                if (sendFromAmount0 > parseEther("0.1")) {
+                    GlobalStore.setFromAmount("0")
+                    throw {
+                        shortMessage: "Swap from amount with maximum 0.1 ETH"
+                    }
+                }
 
                 if (globalstore.fromToken.address !== NATIVE_TOKEN) {
                     while (true) {
@@ -293,7 +305,7 @@ function SwapCore() {
                 } else {
                     GlobalStore.updateTxQueue(2, TXHstatus.REJECTED)
                 }
-            } catch (error: unknown) {
+            } catch (error: ERROR | any) {
                 console.log(error)
                 GlobalStore.updateTxQueue(0, TXHstatus.REJECTED)
                 GlobalStore.updateTxQueue(1, TXHstatus.REJECTED)
@@ -301,6 +313,8 @@ function SwapCore() {
                 if (error instanceof TransactionExecutionError) {
                     toast(error.shortMessage)
                 } else if (error instanceof ContractFunctionExecutionError) {
+                    toast(error.shortMessage)
+                } else if ("shortMessage" in error) {
                     toast(error.shortMessage)
                 } else {
                     toast("Unknown error")
