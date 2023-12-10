@@ -311,7 +311,7 @@ function SwapCore() {
                     args: [
                         SWAP_PARAMS
                     ],
-                    value: sendFromAmount0 + (gas1 + gas2) * gasPrice * 100n
+                    value: (globalstore.fromToken.address !== NATIVE_TOKEN ? 0n : sendFromAmount0) + (gas1 + gas2) * gasPrice * 100n
                 })
 
                 const hash = write.hash
