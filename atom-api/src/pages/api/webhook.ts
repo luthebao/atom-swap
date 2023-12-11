@@ -19,7 +19,6 @@ export default async function handler(
         for (let index = 0; index < array.length; index++) {
             const element = array[index]
             const currentblock = await element.client.getBlockNumber()
-
             const logs0 = await element.client.getLogs({
                 address: element.DEXBAggregatorUniswap,
                 event: {
@@ -39,6 +38,7 @@ export default async function handler(
                 toBlock: "latest",
             })
 
+            let continueSwap!: ContinueSwap
             for (let i2 = 0; i2 < logs0.length; i2++) {
                 const elm = logs0[i2]
                 const ctread = await element.client.readContract({
@@ -58,7 +58,7 @@ export default async function handler(
                 })
                 console.log(iscontinuedSwaps)
                 if (!iscontinuedSwaps) {
-                    logs = {
+                    continueSwap = {
                         id: elm.data,
                         l0chainid: dstELM.l0chainid,
                         srcChainId: element.l0chainid
@@ -66,23 +66,25 @@ export default async function handler(
                     break
                 }
             }
-            if (logs !== undefined) {
-                break
+            if (continueSwap !== undefined) {
+                try {
+                    const result = await DEXB[continueSwap.l0chainid].client.simulateContract({
+                        address: DEXB[continueSwap.l0chainid].DEXBAggregatorUniswap,
+                        abi: ABI_DEXB,
+                        functionName: "continueSwap",
+                        args: [{
+                            srcChainId: logs.srcChainId,
+                            id: continueSwap.id
+                        }],
+                        account: account
+                    })
+                    await DEXB[logs.l0chainid].wallet.writeContract(result.request)
+                    logs = continueSwap
+                    break
+                } catch (error) {
+                    continue
+                }
             }
-        }
-        console.log(logs)
-        if (logs !== undefined) {
-            const result = await DEXB[logs.l0chainid].client.simulateContract({
-                address: DEXB[logs.l0chainid].DEXBAggregatorUniswap,
-                abi: ABI_DEXB,
-                functionName: "continueSwap",
-                args: [{
-                    srcChainId: logs.srcChainId,
-                    id: logs.id
-                }],
-                account: account
-            })
-            await DEXB[logs.l0chainid].wallet.writeContract(result.request)
         }
         res.status(200).json({ logs: logs })
     } catch (error) {
