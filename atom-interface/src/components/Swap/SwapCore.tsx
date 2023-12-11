@@ -122,25 +122,6 @@ function SwapCore() {
         }
         else {
             try {
-                const logs = await wagmiCore.getPublicClient().getLogs({
-                    address: DEXB[globalstore.currentChain.id].DEXBAggregatorUniswap,
-                    event: {
-                        "anonymous": false,
-                        "inputs": [
-                            {
-                                "indexed": false,
-                                "internalType": "bytes32",
-                                "name": "id",
-                                "type": "bytes32"
-                            }
-                        ],
-                        "name": "NewPendingSwap",
-                        "type": "event"
-                    },
-                    fromBlock: 10184809n,
-                    toBlock: 10184897n,
-                })
-
                 GlobalStore.setTxQueue([
                     {
                         id: 0,
@@ -162,7 +143,6 @@ function SwapCore() {
                     },
                 ])
 
-
                 const sendFromAmount0 = parseUnits(globalstore.fromAmount, globalstore.fromToken.decimals)
                 let allowance0: bigint = 0n
 
@@ -172,7 +152,6 @@ function SwapCore() {
                         shortMessage: "Swap from amount with maximum 0.1 ETH"
                     }
                 }
-
                 if (globalstore.fromToken.address !== NATIVE_TOKEN) {
                     while (true) {
                         allowance0 = await wagmiCore.readContract({
@@ -262,30 +241,12 @@ function SwapCore() {
                     signature: signature,
                 }
 
-                const payload = encodePacked(
-                    ['uint16', 'uint16', 'address', 'uint256', 'address', 'bytes'],
-                    [
-                        1, 1, globalstore.toToken.address as Address, 0n, account.address as Address, signature
-                    ]
-                )
-
-                const gas1 = await wagmiCore.getPublicClient().estimateContractGas({
-                    abi: ABI_ASSET_ROUTER,
-                    address: DEXB[globalstore.currentChain.id].AssetRouter,
-                    functionName: "swap",
-                    args: [{
-                        srcPoolId: 1,
-                        dstPoolId: 1,
-                        dstChainId: DEXB[globalstore.toChain.id].l0chainid,
-                        amount: globalstore.quote.minHgsAmount,
-                        minAmount: 0n,
-                        refundAddress: account.address as Address,
-                        to: DEXB[globalstore.toChain.id].DEXBAggregatorUniswap,
-                        payload: payload
-                    }],
-                    value: sendFromAmount0,
-                    account: account.address as Address,
-                })
+                // const payload = encodePacked(
+                //     ['uint16', 'uint16', 'address', 'uint256', 'address', 'bytes'],
+                //     [
+                //         1, 1, globalstore.toToken.address as Address, 0n, account.address as Address, signature
+                //     ]
+                // )
 
                 const gas2 = await wagmiCore.getPublicClient().estimateContractGas({
                     abi: ABI_DEXB,
@@ -302,7 +263,7 @@ function SwapCore() {
 
                 gasPrice = gasPrice < 500000n ? 500000n : gasPrice
 
-                console.log(gasPrice, gas1, gas2, formatUnits((gas1 + gas2) * gasPrice * 100n, 18))
+                console.log(gasPrice, gas2, formatUnits((gas2 + gas2) * gasPrice * 100n, 18))
 
                 const write = await wagmiCore.writeContract({
                     abi: ABI_DEXB,
@@ -311,7 +272,7 @@ function SwapCore() {
                     args: [
                         SWAP_PARAMS
                     ],
-                    value: (globalstore.fromToken.address !== NATIVE_TOKEN ? 0n : sendFromAmount0) + (gas1 + gas2) * gasPrice * 100n
+                    value: (globalstore.fromToken.address !== NATIVE_TOKEN ? 0n : sendFromAmount0) + (gas2 + gas2) * gasPrice * 100n
                 })
 
                 const hash = write.hash
