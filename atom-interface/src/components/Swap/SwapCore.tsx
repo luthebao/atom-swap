@@ -238,12 +238,13 @@ function SwapCore() {
                         lwsPoolId: 1,
                         hgsPoolId: 1,
                         dstToken: globalstore.toToken.address,
-                        minHgsAmount: globalstore.quote.minHgsAmount * 60n / 100n,
+                        minHgsAmount: globalstore.fromToken.address !== NATIVE_TOKEN ? 0n : globalstore.quote.minHgsAmount * 80n / 100n,
                     },
                 });
-                GlobalStore.updateTxQueue(1, TXHstatus.DONE)
 
+                GlobalStore.updateTxQueue(1, TXHstatus.DONE)
                 GlobalStore.updateTxQueue(2, TXHstatus.PENDING)
+
                 const SWAP_PARAMS = {
                     srcToken: globalstore.fromToken.address as Address,
                     srcAmount: sendFromAmount0,
@@ -252,7 +253,7 @@ function SwapCore() {
                     dstToken: globalstore.toToken.address as Address,
                     dstChain: DEXB[globalstore.toChain.id].l0chainid,
                     dstAggregatorAddress: DEXB[globalstore.toChain.id].DEXBAggregatorUniswap,
-                    minHgsAmount: globalstore.quote.minHgsAmount * 60n / 100n,
+                    minHgsAmount: globalstore.fromToken.address !== NATIVE_TOKEN ? 0n : globalstore.quote.minHgsAmount * 80n / 100n,
                     signature: signature,
                 }
 
@@ -270,7 +271,7 @@ function SwapCore() {
                     args: [
                         {
                             ...SWAP_PARAMS,
-                            srcAmount: sendFromAmount0,
+                            srcAmount: sendFromAmount0 * 10n / 100n,
                         }
                     ],
                     value: globalstore.fromToken.address !== NATIVE_TOKEN ? parseEther("0.0005") : sendFromAmount0,
@@ -319,6 +320,8 @@ function SwapCore() {
                     toast("Unknown error")
                 }
             }
+            GlobalStore.setFromToken(null)
+            GlobalStore.setToToken(null)
             GlobalStore.setToAmount("0")
         }
         setLoading(false)
