@@ -1,13 +1,14 @@
-import GlobalStore, { SwapInputType, Token } from '../../store/gobalStore';
+import GlobalStore, { SWAPSTATE, SwapInputType, Token } from '../../store/gobalStore';
 import { useSnapshot } from 'valtio';
 import { DEXB } from '../../configs/addresses'
 import { FaCaretDown } from "react-icons/fa"
-import { Dialog, MenuItem, Typography } from '@material-ui/core';
+import { Dialog, IconButton, MenuItem, Typography } from '@material-ui/core';
 import { TokenList } from '../../configs/tokens';
-import { NATIVE_TOKEN, uriToHttp } from '../../configs/utils';
+import { NATIVE_TOKEN, formatInputNumber, uriToHttp } from '../../configs/utils';
 import { useState } from 'react';
 import { Address, Chain, useAccount, useBalance, useChainId, useNetwork } from 'wagmi';
 import { CHAINS_lIST, wagmiCore } from '../../configs/connectors';
+import { MdClear } from 'react-icons/md';
 
 const SelectTokenButton = ({
     token
@@ -88,6 +89,13 @@ export default function CurrencyInput({
         }
     }
 
+    const onChangeInput = (value: string) => {
+        if (type === SwapInputType.FROM) {
+            const formatted = formatInputNumber(value)
+            GlobalStore.setFromAmount(formatted)
+        }
+    }
+
     return (
         <div className="relative px-3 pt-2 pb-3">
             <div className="flex justify-between select-none">
@@ -118,15 +126,19 @@ export default function CurrencyInput({
                 <div className='flex flex-grow relative'>
                     <input
                         disabled={type === SwapInputType.TO}
-                        className="w-full focus:outline-none justify-between border !border-l-0 border-[#4a4a4a] p-2 h-[58px] items-center gap-2 rounded-r-[10px] bg-transparent" placeholder="Enter amount"
+                        className="absolute w-full select-none focus:outline-none justify-between border !border-l-0 border-[#4a4a4a] p-2 h-[58px] items-center gap-2 rounded-r-[10px] bg-transparent" placeholder="Enter amount"
                         value={type === SwapInputType.FROM ? globalStore.fromAmount : globalStore.toAmount}
                         onChange={(e) => {
-                            type === SwapInputType.FROM && GlobalStore.setFromAmount(e.target.value)
+                            type === SwapInputType.FROM && onChangeInput(e.target.value)
                         }}
                     />
-                    {/* {type === SwapInputType.FROM && (<button className="absolute end-2.5 bottom-3.5 border rounded-[5px] p-1 items-center">
-                        max
-                    </button>)} */}
+                    {type === SwapInputType.FROM && globalStore.swapstate === SWAPSTATE.SUBMIT && (
+                        <div className="absolute h-full flex items-center end-0">
+                            <IconButton className="border rounded-[5px] p-1 items-center h-[40px] w-[40px] m-auto" >
+                                <MdClear className="text-xl" onClick={() => onChangeInput("0")} />
+                            </IconButton>
+                        </div>
+                    )}
                 </div>
 
             </div>

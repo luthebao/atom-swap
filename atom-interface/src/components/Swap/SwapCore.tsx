@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
     Typography,
     Button,
@@ -29,6 +29,7 @@ interface ERROR {
 
 function SwapCore() {
     const globalstore = useSnapshot(GlobalStore.state)
+
     const chainid = useChainId()
     const [loading, setLoading] = useState(false)
     const { openConnectModal } = useConnectModal();
@@ -36,13 +37,24 @@ function SwapCore() {
     const { signTypedDataAsync } = useSignTypedData({})
     const account = useAccount()
 
+    useEffect(() =>  {
+        setLoading(false)
+
+        return () => {
+            setLoading(true)
+        }
+    }, [globalstore.fromAmount])
+
     const fetchQuote = async () => {
         setLoading(true)
         if (globalstore.currentChain !== null && globalstore.toChain !== null && globalstore.fromToken !== null && globalstore.toToken !== null && Number(globalstore.fromAmount) >= 0) {
             try {
                 GlobalStore.setToAmount("0")
                 GlobalStore.setQuote(null)
+                console.log(globalstore)
+                console.log("fromAmount", globalstore.fromAmount)
                 const sendFromAmount0 = parseUnits(globalstore.fromAmount, globalstore.fromToken.decimals)
+
 
                 let addy0 = globalstore.fromToken.address
                 let addy1 = globalstore.toToken.address

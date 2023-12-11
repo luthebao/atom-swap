@@ -95,8 +95,7 @@ const GlobalStore = {
             state.toChain = null
         }
         state.toAmount = "0"
-        
-        this.getStepSwap()
+        state.swapstate = SWAPSTATE.INPUT
     },
     setToChain(value: Chain | null) {
         state.toChain = value
@@ -105,8 +104,7 @@ const GlobalStore = {
             state.currentChain = null
         }
         state.toAmount = "0"
-
-        this.getStepSwap()
+        state.swapstate = SWAPSTATE.INPUT
     },
     setSwapInput() {
         const MID_Chain = state.currentChain
@@ -117,7 +115,7 @@ const GlobalStore = {
         state.fromToken = state.toToken
         state.toToken = MID_Token
 
-        this.getStepSwap()
+        state.swapstate = SWAPSTATE.INPUT
     },
 
     setFromToken(value: Token | null) {
@@ -126,8 +124,7 @@ const GlobalStore = {
             state.toToken = null
         }
         state.toAmount = "0"
-
-        this.getStepSwap()
+        state.swapstate = SWAPSTATE.INPUT
     },
     setToToken(value: Token | null) {
         state.toToken = value
@@ -135,8 +132,7 @@ const GlobalStore = {
             state.fromToken = null
         }
         state.toAmount = "0"
-
-        this.getStepSwap()
+        state.swapstate = SWAPSTATE.INPUT
     },
 
     setQuote(value: Quote | null) {
@@ -144,24 +140,16 @@ const GlobalStore = {
     },
 
     setFromAmount(value: string) {
-        state.fromAmount = formatInputNumber(value) as Ether
+        state.fromAmount = value as Ether
+        console.log(value)
         state.toAmount = "0"
-        this.getStepSwap()
+        state.swapstate = SWAPSTATE.QUOTE
     },
     setToAmount(value: string) {
-        state.toAmount = formatInputNumber(value) as Ether
-        this.getStepSwap()
+        state.toAmount = value as Ether
+        state.swapstate = SWAPSTATE.SUBMIT
     },
 
-    getStepSwap() {
-        if (state.currentChain === null || state.toChain === null || state.fromToken === null || state.toToken === null || Number(state.fromAmount) <= 0) {
-            state.swapstate = SWAPSTATE.INPUT
-        } else if (Number(state.toAmount) <= 0) {
-            state.swapstate = SWAPSTATE.QUOTE
-        } else {
-            state.swapstate = SWAPSTATE.SUBMIT
-        }
-    },
     setOpenQueue(value: boolean) {
         state.openQueue = value
         const isDone = state.txQueue.length > 0 && state.txQueue.filter((tx) => { return [TXHstatus.DONE, TXHstatus.CONFIRMED, TXHstatus.REJECTED].includes(tx.status) }).length === state.txQueue.length
