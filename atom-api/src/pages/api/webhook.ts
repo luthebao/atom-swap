@@ -86,7 +86,7 @@ export default async function handler(
                 }
             }
         }
-        res.status(200).json({ logs: logs })
+        res.status(200).json({ logs: logs ? logs : "noswap" })
     } catch (error) {
         console.log(error)
         res.status(400).json({ name: 'John Doe' })
