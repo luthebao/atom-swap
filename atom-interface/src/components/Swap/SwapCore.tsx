@@ -46,6 +46,8 @@ function SwapCore() {
 
                 let addy0 = globalstore.fromToken.address
                 let addy1 = globalstore.toToken.address
+                let result0 = [0n, 0n]
+                let result1 = [0n, 0n]
 
                 if (globalstore.fromToken.address === NATIVE_TOKEN) {
                     addy0 = DEXB[globalstore.currentChain.id].WETH
@@ -55,42 +57,51 @@ function SwapCore() {
                     addy1 = DEXB[globalstore.toChain.id].WETH
                 }
 
-                const result0 = await wagmiCore.readContract({
-                    abi: ABI_UNISWAP,
-                    address: DEXB[globalstore.currentChain.id].Uniswap,
-                    chainId: globalstore.currentChain.id,
-                    functionName: "getAmountsOut",
-                    args: [
-                        sendFromAmount0,
-                        [
-                            addy0 as Address, DEXB[globalstore.currentChain.id].Token
+                if (addy0 === DEXB[globalstore.currentChain.id].Token) {
+                    result0[0] = sendFromAmount0
+                    result0[1] = sendFromAmount0
+                } else {
+                    result0 = await wagmiCore.readContract({
+                        abi: ABI_UNISWAP,
+                        address: DEXB[globalstore.currentChain.id].Uniswap,
+                        chainId: globalstore.currentChain.id,
+                        functionName: "getAmountsOut",
+                        args: [
+                            sendFromAmount0,
+                            [
+                                addy0 as Address, DEXB[globalstore.currentChain.id].Token
+                            ]
                         ]
-                    ]
-                })
-
-                if (result0.length !== 2) {
-                    toast("Can not find pair")
-                    return
+                    }) as bigint[]
+                    if (result0[1] <= 0n) {
+                        toast("Can not find pair")
+                        return
+                    }
                 }
 
                 const sendFromAmount1 = result0[1]
 
-                const result1 = await wagmiCore.readContract({
-                    abi: ABI_UNISWAP,
-                    address: DEXB[globalstore.toChain.id].Uniswap,
-                    chainId: globalstore.toChain.id,
-                    functionName: "getAmountsOut",
-                    args: [
-                        sendFromAmount1,
-                        [
-                            DEXB[globalstore.toChain.id].Token, addy1 as Address
+                if (addy1 === DEXB[globalstore.toChain.id].Token) {
+                    result1[0] = sendFromAmount1
+                    result1[1] = sendFromAmount1
+                } else {
+                    result1 = await wagmiCore.readContract({
+                        abi: ABI_UNISWAP,
+                        address: DEXB[globalstore.toChain.id].Uniswap,
+                        chainId: globalstore.toChain.id,
+                        functionName: "getAmountsOut",
+                        args: [
+                            sendFromAmount1,
+                            [
+                                DEXB[globalstore.toChain.id].Token, addy1 as Address
+                            ]
                         ]
-                    ]
-                })
+                    }) as bigint[]
 
-                if (result1.length !== 2) {
-                    toast("Can not find pair")
-                    return
+                    if (result1[1] <= 0n) {
+                        toast("Can not find pair")
+                        return
+                    }
                 }
 
                 GlobalStore.setQuote({

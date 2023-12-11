@@ -26,6 +26,14 @@ export const TokenList = {
             "chainId": 5,
             "logoURI": "https://assets.coingecko.com/coins/images/2518/large/weth.png"
         },
+        {
+            "name": "Test USDC",
+            "decimals": 18,
+            "symbol": "tUSDC",
+            "address": "0x4967FFab425016004f97C4E1dB7B12F501d24f39",
+            "chainId": 5,
+            "logoURI": "https://assets.coingecko.com/coins/images/6319/large/usdc.png"
+        },
 
         {
             "name": "Ether",
@@ -42,6 +50,14 @@ export const TokenList = {
             "address": "0x4200000000000000000000000000000000000006",
             "chainId": 84531,
             "logoURI": "https://assets.coingecko.com/coins/images/2518/large/weth.png"
+        },
+        {
+            "name": "Test USDC",
+            "decimals": 18,
+            "symbol": "tUSDC",
+            "address": "0x4967FFab425016004f97C4E1dB7B12F501d24f39",
+            "chainId": 84531,
+            "logoURI": "https://assets.coingecko.com/coins/images/6319/large/usdc.png"
         },
     ],
     "timestamp": "2020-12-11T17:08:18.941Z",
