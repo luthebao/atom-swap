@@ -6,8 +6,8 @@ import { Dialog, MenuItem, Typography } from '@material-ui/core';
 import { TokenList } from '../../configs/tokens';
 import { NATIVE_TOKEN, uriToHttp } from '../../configs/utils';
 import { useState } from 'react';
-import { Address, Chain, useAccount, useBalance, useNetwork } from 'wagmi';
-import { CHAINS_lIST } from '../../configs/connectors';
+import { Address, Chain, useAccount, useBalance, useChainId, useNetwork } from 'wagmi';
+import { CHAINS_lIST, wagmiCore } from '../../configs/connectors';
 
 const SelectTokenButton = ({
     token
@@ -53,8 +53,10 @@ export default function CurrencyInput({
     type: SwapInputType,
 }) {
     const account = useAccount()
+    const chainid = useChainId()
+
     const globalStore = useSnapshot(GlobalStore.state)
-    const allTokens = TokenList.tokens.filter(val => val.chainId === (type === SwapInputType.FROM ? (globalStore.currentChain?.id || 0) : (globalStore.toChain?.id || 0)))
+    // const allTokens = TokenList.tokens.filter(val => val.chainId === (type === SwapInputType.FROM ? (globalStore.currentChain?.id || 0) : (globalStore.toChain?.id || 0)))
 
     const [showTokens, setShowTokens] = useState(false)
     const [showChains, setShowChains] = useState(false)
@@ -65,6 +67,26 @@ export default function CurrencyInput({
         address: account.address,
         watch: true
     })
+
+    const addAsset = async (asset: {
+        name: string;
+        decimals: number;
+        symbol: string;
+        address: string;
+        chainId: number;
+        logoURI: string;
+    }) => {
+        if (chainid === asset.chainId) {
+            (await wagmiCore.getWalletClient())?.watchAsset({
+                type: "ERC20",
+                options: {
+                    address: asset.address,
+                    decimals: asset.decimals,
+                    symbol: asset.symbol,
+                },
+            })
+        }
+    }
 
     return (
         <div className="relative px-3 pt-2 pb-3">
@@ -113,32 +135,41 @@ export default function CurrencyInput({
                     <div>
                         {type === SwapInputType.FROM ? globalStore.currentChain?.name : globalStore.toChain?.name}
                     </div>
-                    <div className="w-full flex flex-col mt-[12px]">
+                    <div className="w-full flex flex-col mt-[12px] gap-4">
                         {
-                            allTokens.map((asset, idx) => (
-                                <MenuItem key={asset.address + asset.chainId} onClick={() => {
-                                    if (type === SwapInputType.FROM) {
-                                        GlobalStore.setFromToken(asset)
-                                    } else {
-                                        GlobalStore.setToToken(asset)
-                                    }
-                                    setShowTokens(false)
-                                }}>
-                                    <div>
-                                        <div className="w-[50px] relative mr-[12px]">
-                                            <img
-                                                className="border border-solid border-border rounded-[30px] bg-color-component-input p-[6px]"
-                                                alt={asset.address}
-                                                src={asset ? `${uriToHttp(asset.logoURI || asset.symbol)[0]}` : '/tokens/unknown-logo.png?v=006'}
-                                                width={40}
-                                            />
+                            TokenList.tokens.filter(val => val.chainId === (type === SwapInputType.FROM ? (globalStore.currentChain?.id || 0) : (globalStore.toChain?.id || 0))).map((asset, idx) => (
+                                <div key={asset.address + asset.chainId}
+                                    className="flex justify-between hover:bg-[#171b21] p-2"
+                                >
+                                    <div className="flex flex-grow cursor-pointer" onClick={() => {
+                                        if (type === SwapInputType.FROM) {
+                                            GlobalStore.setFromToken(asset)
+                                        } else {
+                                            GlobalStore.setToToken(asset)
+                                        }
+                                        setShowTokens(false)
+                                    }}>
+                                        <div className="flex items-center">
+                                            <div className="w-[50px] relative mr-[12px]">
+                                                <img
+                                                    className="border border-solid border-border rounded-[30px] bg-color-component-input p-[6px]"
+                                                    alt={asset.address}
+                                                    src={asset ? `${uriToHttp(asset.logoURI || asset.symbol)[0]}` : '/tokens/unknown-logo.png?v=006'}
+                                                    width={40}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center w-full">
+                                            {/* <Typography variant='h5' className="items-start relative flex">{asset ? asset.symbol : ''}</Typography> */}
+                                            <Typography variant='h5' color='textSecondary' className="tracking-wide truncate">{asset ? asset.name : ''} ({asset ? asset.symbol : ''})</Typography>
                                         </div>
                                     </div>
-                                    <div>
-                                        <Typography variant='h5'>{asset ? asset.symbol : ''}</Typography>
-                                        <Typography variant='subtitle1' color='textSecondary'>{asset ? asset.name : ''}</Typography>
-                                    </div>
-                                </MenuItem>
+                                    {asset.address !== NATIVE_TOKEN && asset.chainId === chainid && <div className="flex items-center select-none cursor-pointer" onClick={() => {
+                                        addAsset(asset)
+                                    }}>
+                                        Import
+                                    </div>}
+                                </div>
                             ))
                         }
                     </div>
