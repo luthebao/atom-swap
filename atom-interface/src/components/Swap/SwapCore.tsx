@@ -79,6 +79,8 @@ function SwapCore() {
                     }
                 }
 
+                console.log(result0)
+
                 const sendFromAmount1 = result0[1]
 
                 if (addy1 === DEXB[globalstore.toChain.id].Token) {
@@ -103,11 +105,13 @@ function SwapCore() {
                         return
                     }
                 }
+                console.log(result1)
 
                 GlobalStore.setQuote({
                     minHgsAmount: result1[0]
                 })
                 GlobalStore.setToAmount(formatUnits(result1[1], globalstore.toToken.decimals))
+
             } catch (error: unknown) {
                 console.log(error)
                 if (error instanceof TransactionExecutionError) {
@@ -157,10 +161,10 @@ function SwapCore() {
                 const sendFromAmount0 = parseUnits(globalstore.fromAmount, globalstore.fromToken.decimals)
                 let allowance0: bigint = 0n
 
-                if (sendFromAmount0 > parseEther("0.1")) {
+                if ((sendFromAmount0 > parseEther("0.1") && globalstore.fromToken.symbol.includes("ETH")) || (parseUnits(globalstore.toAmount, globalstore.toToken.decimals) > parseEther("0.2") && globalstore.toToken.symbol.includes("ETH"))) {
                     GlobalStore.setFromAmount("0")
                     throw {
-                        shortMessage: "Swap from amount with maximum 0.1 ETH"
+                        shortMessage: "Amount of swap: maximum 0.1 ETH (from), 0.2 ETH (to)"
                     }
                 }
                 if (globalstore.fromToken.address !== NATIVE_TOKEN) {
@@ -264,9 +268,12 @@ function SwapCore() {
                     address: DEXB[globalstore.currentChain.id].DEXBAggregatorUniswap,
                     functionName: "startSwap",
                     args: [
-                        SWAP_PARAMS
+                        {
+                            ...SWAP_PARAMS,
+                            srcAmount: sendFromAmount0,
+                        }
                     ],
-                    value: sendFromAmount0 * 2n,
+                    value: globalstore.fromToken.address !== NATIVE_TOKEN ? parseEther("0.0005") : sendFromAmount0,
                     account: account.address as Address,
                 })
 
