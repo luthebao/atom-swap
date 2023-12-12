@@ -147,11 +147,11 @@ export default function CurrencyInput({
                     <div>
                         {type === SwapInputType.FROM ? globalStore.currentChain?.name : globalStore.toChain?.name}
                     </div>
-                    <div className="w-full flex flex-col mt-[12px] gap-4">
+                    <div className="w-full flex flex-col mt-[12px] gap-1">
                         {
                             TokenList.tokens.filter(val => val.chainId === (type === SwapInputType.FROM ? (globalStore.currentChain?.id || 0) : (globalStore.toChain?.id || 0))).map((asset, idx) => (
                                 <div key={asset.address + asset.chainId}
-                                    className="flex justify-between hover:bg-[#171b21] p-2"
+                                    className="flex justify-between hover:bg-[#171b21] px-3 py-2"
                                 >
                                     <div className="flex flex-grow cursor-pointer" onClick={() => {
                                         if (type === SwapInputType.FROM) {
