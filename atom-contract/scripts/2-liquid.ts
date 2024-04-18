@@ -6,10 +6,14 @@ import hre, { ethers } from "hardhat";
 
 async function main() {
     const accounts = await hre.ethers.getSigners();
-    const account = accounts[0].address;
-    const network = hre.network.name;
-    const confirmnum = 1
-    console.log(`Submit transactions with account: ${account} on ${network}`)
+    const account_num = 2
+    const confirmnum = 2
+
+    const account = accounts[account_num];
+    const network = hre.network.name
+    console.log(`Submit transactions with account: ${account.address} on ${network}`)
+
+    const deployer = new Deployer(account_num, confirmnum)
 
     const prompt = require('prompt-sync')();
     const iscontinue = prompt("continue (y/n/_): ")
@@ -18,24 +22,25 @@ async function main() {
         return
     }
 
-    const Token = (await ethers.getContractFactory("TestUSD")).attach(DEXB[network].Token)
+    const Token = (await ethers.getContractFactory("TestUSD")).connect(account).attach(DEXB[network].Token)
     const IUniswapV2Router02 = await ethers.getContractAt("IUniswapV2Router02", DEXB[network].uniswap)
 
-    await (await Token.approve(DEXB[network].uniswap, "115792089237316195423570985008687907853269984665640564039457584007913129639935")).wait(confirmnum)
+    await (await Token.connect(account).approve(DEXB[network].uniswap, "115792089237316195423570985008687907853269984665640564039457584007913129639935")).wait(confirmnum)
     console.log(`Token approve IUniswapV2Router02`)
 
-    await (await IUniswapV2Router02.addLiquidityETH(
+
+    await (await IUniswapV2Router02.connect(account).addLiquidityETH(
         DEXB[network].Token,
-        "10000000000000000000000",
+        "2000000000000000000000000",
         0,
         0,
-        account,
+        account.address,
         Math.floor(Date.now() / 1000) + 2 * 60,
         {
-            value: "5000000000000000000"
+            value: "100000000000000000000"
         }
     )).wait(confirmnum)
-    console.log(`IUniswapV2Router02 add 5 ETH Liquidity Token`)
+    console.log(`IUniswapV2Router02 add 100 ETH Liquidity Token`)
 
 }
 

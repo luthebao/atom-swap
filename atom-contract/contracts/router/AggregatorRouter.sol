@@ -15,7 +15,7 @@ import "../poolv2-implementation/interfaces/IAssetV2.sol";
 import "../interfaces/IUniswapV2Router02.sol";
 import "../interfaces/IWrappedNativeToken.sol";
 
-contract DEXBAggregatorUniswap is AccessControl, ReentrancyGuard, EIP712 {
+contract AggregatorRouter is AccessControl, ReentrancyGuard, EIP712 {
     using SafeERC20 for IERC20;
     using ECDSA for bytes32;
     using Counters for Counters.Counter;
@@ -83,7 +83,7 @@ contract DEXBAggregatorUniswap is AccessControl, ReentrancyGuard, EIP712 {
     event SwapContinued(bytes32 id);
     event AggregatorInfosUpdated();
 
-    constructor() EIP712("DEXB Swap", "0.0.1") {}
+    constructor() EIP712("MineralX.tech Swap", "0.0.1") {}
 
     function initialize(
         IAssetRouter assetRouter_,

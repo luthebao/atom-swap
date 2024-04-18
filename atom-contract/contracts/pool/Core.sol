@@ -5,7 +5,7 @@ import "../libraries/DSMath.sol";
 
 /**
  * @title Core
- * @notice Handles math operations of DEXB protocol.
+ * @notice Handles math operations of MineralX.tech protocol.
  * @dev Uses DSMath to compute using WAD and RAY.
  */
 contract Core {

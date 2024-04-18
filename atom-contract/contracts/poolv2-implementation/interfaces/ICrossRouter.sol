@@ -98,7 +98,7 @@ interface ICrossRouter is Shared {
 
     /**
      * @notice Swaps crosschain assets
-     * @dev DEXB is leveraging fragmented liquidity pools to crossswap assets. The slippage takes into account the
+     * @dev MineralX.tech is leveraging fragmented liquidity pools to crossswap assets. The slippage takes into account the
      * src bandwidth and dst bandwidth to calculate how many assets it should send. Fees will be calculated on src but
      * taken out of the dst chain.
      * @param swapParams The swap parameters

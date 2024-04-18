@@ -1,38 +1,17 @@
+import { DEXB } from "./config";
 import { Deployer } from "./helper";
 import hre from "hardhat";
 
-interface LAYER0 {
-    [name: string]: {
-        chainid: number;
-        chainrpc: number;
-        l0endpoint: string;
-        uniswap: string
-        weth: string
-    }
-}
-
-const LAYER0ADD: LAYER0 = {
-    "goerli": {
-        chainid: 10121,
-        chainrpc: 5,
-        l0endpoint: "0xbfD2135BFfbb0B5378b56643c2Df8a87552Bfa23",
-        uniswap: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
-        weth: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"
-    },
-    "baseGoerli": {
-        chainid: 10160,
-        chainrpc: 84531,
-        l0endpoint: "0x6aB5Ae6822647046626e83ee6dB8187151E1d5ab",
-        uniswap: "0x48e62E03D4683D9193797209EC3fA8aA3Bc90BC6",
-        weth: "0x4200000000000000000000000000000000000006"
-    }
-}
-
 async function main() {
     const accounts = await hre.ethers.getSigners();
-    const account = accounts[0].address;
+    const account_num = 2
+    const confirmnum = 2
+
+    const account = accounts[account_num];
     const network = hre.network.name
-    console.log(`Submit transactions with account: ${account} on ${network}`)
+    console.log(`Submit transactions with account: ${account.address} on ${network}`)
+
+    const deployer = new Deployer(account_num, confirmnum)
 
     const prompt = require('prompt-sync')();
     const iscontinue = prompt("continue (y/n/_): ")
@@ -41,77 +20,75 @@ async function main() {
         return
     }
 
-    const FeeCollector = await Deployer.deployContract("FeeCollector", [])
-    await Deployer.verifyContract(FeeCollector.address, [])
+    const FeeCollector = await deployer.deployContract("FeeCollector", [])
+    await deployer.verifyContract(FeeCollector.address, [])
 
-    const FeeHandlerMock = await Deployer.deployContract("FeeHandlerMock", [])
-    await Deployer.verifyContract(FeeHandlerMock.address, [])
+    const FeeHandlerMock = await deployer.deployContract("FeeHandlerMock", [])
+    await deployer.verifyContract(FeeHandlerMock.address, [])
 
-    const AssetRouter = await Deployer.deployContract("AssetRouter", [
+    const AssetRouter = await deployer.deployContract("AssetRouter", [
         FeeHandlerMock.address,
-        LAYER0ADD[network].chainid, // goerli testnet
+        DEXB[network].chainid,
         FeeCollector.address
     ])
-    await Deployer.verifyContract(AssetRouter.address, [
+    await deployer.verifyContract(AssetRouter.address, [
         FeeHandlerMock.address,
-        LAYER0ADD[network].chainid, // goerli testnet
+        DEXB[network].chainid,
         FeeCollector.address
     ])
 
-    const Bridge = await Deployer.deployContract("Bridge", [
-        LAYER0ADD[network].l0endpoint,
+    const Bridge = await deployer.deployContract("Bridge", [
+        DEXB[network].endpoint,
         AssetRouter.address
     ])
-    await Deployer.verifyContract(Bridge.address, [
-        LAYER0ADD[network].l0endpoint,
+    await deployer.verifyContract(Bridge.address, [
+        DEXB[network].endpoint,
         AssetRouter.address
     ])
 
-    const DEXBAggregatorUniswap = await Deployer.deployContract("DEXBAggregatorUniswap", [])
-    await Deployer.verifyContract(DEXBAggregatorUniswap.address, [])
+    const AggregatorRouter = await deployer.deployContract("AggregatorRouter", [])
+    await deployer.verifyContract(AggregatorRouter.address, [])
 
-    const Token = await Deployer.deployContract("TestUSD", [])
-    await Deployer.verifyContract(Token.address, [])
+    const Token = await deployer.deployContract("TestUSD", [])
+    await deployer.verifyContract(Token.address, [])
 
-    const AssetV2 = await Deployer.deployContract("AssetV2", [
+    const AssetV2 = await deployer.deployContract("AssetV2", [
         Token.address,
         "CSM USD",
         "csmUSD"
     ])
-    await Deployer.verifyContract(AssetV2.address, [
+    await deployer.verifyContract(AssetV2.address, [
         Token.address,
         "CSM USD",
         "csmUSD"
     ])
 
-    await DEXBAggregatorUniswap.attach(DEXBAggregatorUniswap.address).initialize(
+    await AggregatorRouter.connect(account).attach(AggregatorRouter.address).initialize(
         AssetRouter.address,
         Bridge.address,
-        LAYER0ADD[network].uniswap, // uniswap
-        LAYER0ADD[network].weth, // WETH,
-        accounts[0].address
+        DEXB[network].uniswap,
+        DEXB[network].weth,
+        account.address
     )
-    console.log("DEXBAggregatorUniswap initial")
+    console.log("AggregatorRouter initial")
 
     console.log("//", hre.network.name)
     console.log("// FeeCollector:", FeeCollector.address)
     console.log("// FeeHandlerMock:", FeeHandlerMock.address)
     console.log("// AssetRouter:", AssetRouter.address)
     console.log("// Bridge:", Bridge.address)
-    console.log("// DEXBAggregatorUniswap:", DEXBAggregatorUniswap.address)
+    console.log("// AggregatorRouter:", AggregatorRouter.address)
     console.log("// Token:", Token.address)
     console.log("// AssetV2:", AssetV2.address)
 
     console.log(
         network,
         {
-            chainid: LAYER0ADD[network].chainid,
-            chainrpc: LAYER0ADD[network].chainrpc,
             FeeCollector: FeeCollector.address,
             FeeHandlerMock: FeeHandlerMock.address,
             AssetRouter: AssetRouter.address,
             Bridge: Bridge.address,
-            DEXBAggregatorUniswap: DEXBAggregatorUniswap.address,
+            AggregatorRouter: AggregatorRouter.address,
             Token: Token.address,
             AssetV2: AssetV2.address,
         }

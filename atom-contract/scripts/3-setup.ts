@@ -4,11 +4,14 @@ import hre, { ethers } from "hardhat";
 
 async function main() {
     const accounts = await hre.ethers.getSigners();
-    const account = accounts[0].address;
-    const network = hre.network.name;
-    const confirmnum = 1
+    const account_num = 2
+    const confirmnum = 3
 
-    console.log(`Submit transactions with account: ${account} on ${network}`)
+    const account = accounts[account_num];
+    const network = hre.network.name
+    console.log(`Submit transactions with account: ${account.address} on ${network}`)
+
+    const deployer = new Deployer(account_num, confirmnum)
 
     const prompt = require('prompt-sync')();
     const iscontinue = prompt("continue (y/n/_): ")
@@ -17,15 +20,15 @@ async function main() {
         return
     }
 
-    const Token = await ethers.getContractFactory("TestUSD")
-    await (await Token.attach(DEXB[network].Token).mint(DEXB[network].AssetV2, "1000000000000000000000000")).wait(confirmnum)
-    console.log("mint token to AssetV2", DEXB[network].AssetV2)
+    // const Token = (await ethers.getContractFactory("TestUSD")).connect(account).attach(DEXB[network].Token)
+    // await (await Token.mint(DEXB[network].AssetV2, "1000000000000000000000000")).wait(confirmnum)
+    // console.log("mint token to AssetV2", DEXB[network].AssetV2)
 
-    const AssetV2 = await ethers.getContractFactory("AssetV2")
-    await (await AssetV2.attach(DEXB[network].AssetV2).grantRole("0x7a05a596cb0ce7fdea8a1e1ec73be300bdb35097c944ce1897202f7a13122eb2", DEXB[network].AssetRouter)).wait(confirmnum)
+    const AssetV2 = (await ethers.getContractFactory("AssetV2")).connect(account).attach(DEXB[network].AssetV2)
+    await (await AssetV2.grantRole("0x7a05a596cb0ce7fdea8a1e1ec73be300bdb35097c944ce1897202f7a13122eb2", DEXB[network].AssetRouter)).wait(confirmnum)
     console.log("AssetV2 grantRole ", DEXB[network].AssetRouter)
 
-    const Bridge = (await ethers.getContractFactory("Bridge")).attach(DEXB[network].Bridge)
+    const Bridge = (await ethers.getContractFactory("Bridge")).connect(account).attach(DEXB[network].Bridge)
 
     await (await Bridge.grantRole("0x7a05a596cb0ce7fdea8a1e1ec73be300bdb35097c944ce1897202f7a13122eb2", DEXB[network].AssetRouter)).wait(confirmnum)
     console.log("Bridge grantRole AssetRouter", DEXB[network].AssetRouter)
@@ -40,7 +43,7 @@ async function main() {
         console.log("setBridge for chain:", element.chainid);
     }
 
-    const AssetRouter = (await ethers.getContractFactory("AssetRouter")).attach(DEXB[network].AssetRouter)
+    const AssetRouter = (await ethers.getContractFactory("AssetRouter")).connect(account).attach(DEXB[network].AssetRouter)
 
     await (await AssetRouter.grantRole("0x52ba824bfabc2bcfcdf7f0edbb486ebb05e1836c90e78047efeb949990f72e5f", DEXB[network].Bridge)).wait(confirmnum)
     console.log("AssetRouter grantRole Bridge", DEXB[network].Bridge)
@@ -60,21 +63,24 @@ async function main() {
         console.log("AssetRouter createChainPath", element.chainid)
     }
 
-    const DEXBAggregatorUniswap = (await ethers.getContractFactory("DEXBAggregatorUniswap")).attach(DEXB[network].DEXBAggregatorUniswap)
+    const AggregatorRouter = (await ethers.getContractFactory("AggregatorRouter")).connect(account).attach(DEXB[network].AggregatorRouter)
 
-    await (await DEXBAggregatorUniswap.grantRole("0x9e7a659985ff60e88bae893a3fd5287022761d563f4077249c341daf2ac6e085", account)).wait(confirmnum)
-    console.log("DEXBAggregatorUniswap grantRole Continue")
+    for (let index = 0; index < accounts.length; index++) {
+        const acc = accounts[index]
+        await (await AggregatorRouter.grantRole("0x9e7a659985ff60e88bae893a3fd5287022761d563f4077249c341daf2ac6e085", acc.address)).wait(confirmnum)
+        console.log("AggregatorRouter grantRole Continue", acc.address)
+    }
 
-    await (await DEXBAggregatorUniswap.setAggregatorInfos(
+    await (await AggregatorRouter.setAggregatorInfos(
         Object.values(DEXB).map((val) => {
             return {
-                srcAggregatorAddress: val.DEXBAggregatorUniswap,
+                srcAggregatorAddress: val.AggregatorRouter,
                 l0ChainId: val.chainid,
                 chainId: val.chainrpc
             }
         })
     )).wait(confirmnum)
-    console.log("DEXBAggregatorUniswap setAggregatorInfos")
+    console.log("AggregatorRouter setAggregatorInfos")
 
 }
 

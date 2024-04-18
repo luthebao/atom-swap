@@ -7,9 +7,9 @@ import {IFeeHandler} from "../interfaces/IFeeHandler.sol";
 import {DSMath} from "../libraries/DSMath.sol";
 
 /**
- * @author DEXB Labs
+ * @author MineralX.tech Labs
  * @title FeeHandler
- * @notice This contract is used to handle fees within the DEXB ecosystem. It is used to apply mint/burn/swap fees
+ * @notice This contract is used to handle fees within the MineralX.tech ecosystem. It is used to apply mint/burn/swap fees
  * or calculate the slippage
  */
 contract FeeHandlerMock is IFeeHandler, AccessControl {

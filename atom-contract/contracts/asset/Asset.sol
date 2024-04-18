@@ -206,7 +206,7 @@ contract Asset is Ownable, ERC20 {
 
     /**
      * @notice Transfers ERC20 underlyingToken from this contract to another account. Can only be called by Pool.
-     * @dev Not to be confused with transferring DEXB Assets.
+     * @dev Not to be confused with transferring MineralX.tech Assets.
      * @param to address to transfer the token to
      * @param amount amount to transfer
      */

@@ -1,7 +1,7 @@
 import { ImgHTMLAttributes } from "react"
 
 export const PROJECT_LOGO: ImgHTMLAttributes<HTMLImageElement> = {
-    src: "/chains/ethereum.svg",
+    src: "/logo-white.svg",
     alt: "",
-    width: 30,
+    width: 100,
 }

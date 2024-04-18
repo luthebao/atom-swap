@@ -17,12 +17,12 @@ import "../interfaces/IFeeCollector.sol";
 /**
  * @title Pool
  * @notice Manages deposits, withdrawals and swaps. Holds a mapping of assets and parameters.
- * @dev The main entry-point of DEXB protocol
+ * @dev The main entry-point of MineralX.tech protocol
  *
  * Note The Pool is ownable and the owner wields power.
- * Note The ownership will be transferred to a governance contract once DEXB community can show to govern itself.
+ * Note The ownership will be transferred to a governance contract once MineralX.tech community can show to govern itself.
  *
- * The unique features of the DEXB make it an important subject in the study of evolutionary biology.
+ * The unique features of the MineralX.tech make it an important subject in the study of evolutionary biology.
  * + Added recover user funds (for funds mistakingly sent to this contract)
  * + Added view function for eqCovRatio
  */
@@ -386,7 +386,7 @@ contract Pool is Ownable, ReentrancyGuard, Pausable, Core, IPool {
     /**
      * @notice Adds asset to pool, reverts if asset already exists in pool
      * @param token The address of token
-     * @param asset The address of the DEXB Asset contract
+     * @param asset The address of the MineralX.tech Asset contract
      */
     function addAsset(address token, address asset) external onlyOwner {
         require(token != address(0), "ZERO");
@@ -420,7 +420,7 @@ contract Pool is Ownable, ReentrancyGuard, Pausable, Core, IPool {
      * @notice Deposits asset in Pool
      * @param asset The asset to be deposited
      * @param amount The amount to be deposited
-     * @param to The user accountable for deposit, receiving the DEXB assets (lp)
+     * @param to The user accountable for deposit, receiving the MineralX.tech assets (lp)
      * @return liquidity Total asset liquidity minted
      */
     function _deposit(
@@ -464,7 +464,7 @@ contract Pool is Ownable, ReentrancyGuard, Pausable, Core, IPool {
      * @dev Asset needs to be created and added to pool before any operation
      * @param token The token address to be deposited
      * @param amount The amount to be deposited
-     * @param to The user accountable for deposit, receiving the DEXB assets (lp)
+     * @param to The user accountable for deposit, receiving the MineralX.tech assets (lp)
      * @param deadline The deadline to be respected
      * @return liquidity Total asset liquidity minted
      */

@@ -37,7 +37,7 @@ function SwapCore() {
     const { signTypedDataAsync } = useSignTypedData({})
     const account = useAccount()
 
-    useEffect(() =>  {
+    useEffect(() => {
         setLoading(false)
 
         return () => {
